@@ -12,7 +12,7 @@ import (
 	"github.com/pkg/errors"
 )
 
-func CreateProposal(signer *Crypto, channel, ccname, version string, args ...string) (*peer.Proposal, error) {
+func CreateProposal(signer *Crypto, channel, ccname, version string, args []string) (*peer.Proposal, error) {
 	var argsInByte [][]byte
 	for _, arg := range args {
 		argsInByte = append(argsInByte, []byte(arg))

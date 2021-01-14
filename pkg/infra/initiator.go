@@ -15,13 +15,19 @@ func StartCreateProposal(num int, burst int, r float64, config Config, crypto *C
 		limit = rate.Limit(r)
 	}
 	limiter := rate.NewLimiter(limit, burst)
+	chaincodeCtorJSONs := GenerateWorkload(num)
+	// fmt.Println(config.Channel)
+	// fmt.Println(config.Chaincode)
+
 	for i := 0; i < num; i++ {
+		chaincodeCtorJSON := chaincodeCtorJSONs[i]
+		// fmt.Println(chaincodeCtorJSON)
 		prop, err := CreateProposal(
 			crypto,
 			config.Channel,
 			config.Chaincode,
 			config.Version,
-			config.Args...,
+			chaincodeCtorJSON,
 		)
 		if err != nil {
 			errorCh <- errors.Wrapf(err, "error creating proposal")

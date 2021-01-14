@@ -4,6 +4,7 @@ go 1.14
 
 require (
 	github.com/Shopify/sarama v1.23.1 // indirect
+	github.com/go-delve/delve v1.5.1 // indirect
 	github.com/gogo/protobuf v1.2.1
 	github.com/golang/protobuf v1.4.2
 	github.com/hashicorp/go-version v1.2.0 // indirect
