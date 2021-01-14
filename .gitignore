@@ -14,3 +14,7 @@
 
 # Files from IDE
 *.idea/
+
+
+organizations
+/tape
