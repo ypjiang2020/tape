@@ -54,6 +54,9 @@ func (o *Observer) Start(N int, errorCh chan error, finishCh chan struct{}, now 
 
 		fb := r.Type.(*peer.DeliverResponse_FilteredBlock)
 		n = n + len(fb.FilteredBlock.FilteredTransactions)
+		for _, tx := range fb.FilteredBlock.FilteredTransactions {
+			fmt.Println(tx.TxValidationCode)
+		}
 		fmt.Printf("Time %8.2fs\tBlock %6d\tTx %6d\n", time.Since(now).Seconds(), fb.FilteredBlock.Number, len(fb.FilteredBlock.FilteredTransactions))
 	}
 }
