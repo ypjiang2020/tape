@@ -3,6 +3,8 @@ package infra
 import (
 	"sync"
 	"math/rand"
+	"sync/atomic"
+
 
 	"github.com/hyperledger/fabric-protos-go/common"
 	"github.com/hyperledger/fabric-protos-go/peer"
@@ -19,6 +21,7 @@ type Elements struct {
 type Assembler struct {
 	Signer *Crypto
 	EndorserGroups int
+	Abort int32
 }
 
 func (a *Assembler) assemble(e *Elements) (*Elements, error) {
@@ -71,8 +74,11 @@ func (a *Assembler) StartIntegrator(processed, envs chan *Elements, errorCh chan
 		case p := <-processed:
 			e, err := a.assemble(p)
 			if err != nil {
-				errorCh <- err
-				return
+				// abort directly because of the different endorsement
+				atomic.AddInt32(&a.Abort, 1)
+				continue
+				// errorCh <- err
+				// return
 			}
 			envs <- e
 		case <-done:

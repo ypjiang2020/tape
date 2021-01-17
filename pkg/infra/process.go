@@ -52,7 +52,7 @@ func Process(configPath string, num int, burst int, rate float64, logger *log.Lo
 	}
 
 	start := time.Now()
-	go observer.Start(num, errorCh, finishCh, start)
+	go observer.Start(int32(num), errorCh, finishCh, start, &assember.Abort)
 	go StartCreateProposal(num, burst, rate, config, crypto, raw, errorCh, logger)
 
 	for {
@@ -65,6 +65,7 @@ func Process(configPath string, num int, burst int, rate float64, logger *log.Lo
 
 			logger.Infof("Completed processing transactions.")
 			fmt.Printf("tx: %d, duration: %+v, tps: %f\n", num, duration, float64(num)/duration.Seconds())
+			fmt.Printf("abort rate because of the different ledger height: %d %.2f%%\n", assember.Abort, float64(assember.Abort) / float64(num) * 100)
 			return nil
 		}
 	}

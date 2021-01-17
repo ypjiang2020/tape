@@ -37,11 +37,11 @@ func CreateObserver(channel string, node Node, crypto *Crypto, logger *log.Logge
 	return &Observer{d: deliverer, logger: logger}, nil
 }
 
-func (o *Observer) Start(N int, errorCh chan error, finishCh chan struct{}, now time.Time) {
+func (o *Observer) Start(N int32, errorCh chan error, finishCh chan struct{}, now time.Time, abort *int32) {
 	defer close(finishCh)
 	o.logger.Debugf("start observer")
-	n := 0
-	for n < N {
+	var n int32 = 0
+	for n + (*abort) < N {
 		r, err := o.d.Recv()
 		if err != nil {
 			errorCh <- err
@@ -53,7 +53,7 @@ func (o *Observer) Start(N int, errorCh chan error, finishCh chan struct{}, now 
 		}
 
 		fb := r.Type.(*peer.DeliverResponse_FilteredBlock)
-		n = n + len(fb.FilteredBlock.FilteredTransactions)
+		n = n + int32(len(fb.FilteredBlock.FilteredTransactions))
 		for _, tx := range fb.FilteredBlock.FilteredTransactions {
 			fmt.Println(tx.TxValidationCode)
 		}
