@@ -23,7 +23,7 @@ func Process(configPath string, num int, burst int, rate float64, logger *log.Lo
 	done := make(chan struct{})
 	finishCh := make(chan struct{})
 	errorCh := make(chan error, burst)
-	assember := &Assembler{Signer: crypto}
+	assember := &Assembler{Signer: crypto, EndorserGroups: config.EndorserGroups}
 
 	for i := 0; i < len(config.Endorsers); i++ {
 		signed[i] = make(chan *Elements, burst)

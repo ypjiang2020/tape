@@ -2,6 +2,7 @@ package infra
 
 import (
 	"sync"
+	"math/rand"
 
 	"github.com/hyperledger/fabric-protos-go/common"
 	"github.com/hyperledger/fabric-protos-go/peer"
@@ -17,6 +18,7 @@ type Elements struct {
 
 type Assembler struct {
 	Signer *Crypto
+	EndorserGroups int
 }
 
 func (a *Assembler) assemble(e *Elements) (*Elements, error) {
@@ -39,6 +41,8 @@ func (a *Assembler) sign(e *Elements) (*Elements, error) {
 }
 
 func (a *Assembler) StartSigner(raw chan *Elements, signed []chan *Elements, errorCh chan error, done <-chan struct{}) {
+	endorsers_per_group := int(len(signed) / a.EndorserGroups)
+	rand.Seed(666)
 	for {
 		select {
 		case r := <-raw:
@@ -47,9 +51,14 @@ func (a *Assembler) StartSigner(raw chan *Elements, signed []chan *Elements, err
 				errorCh <- err
 				return
 			}
-			for _, v := range signed {
-				v <- t
+			// TODO: select endorser group based on transactions
+			group := rand.Intn(a.EndorserGroups)
+			st := int(endorsers_per_group * group)
+			ed := st + endorsers_per_group
+			for i := st; i < ed; i++ {
+				signed[i] <- t
 			}
+
 		case <-done:
 			return
 		}

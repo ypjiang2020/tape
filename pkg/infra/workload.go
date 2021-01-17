@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"os"
 	"math/rand"
-	"time"
+	// "time"
 	"bufio"
 	"strings"
 )
@@ -55,7 +55,8 @@ func generate() []string {
 }
 
 func GenerateWorkload(n int) [][]string {
-	rand.Seed(time.Now().UnixNano())
+	// rand.Seed(time.Now().UnixNano())
+	rand.Seed(666)
 
 	if _, err := os.Stat(accounts_file); os.IsNotExist(err) {
 		fmt.Printf("create %d accounts\n", n)
