@@ -11,7 +11,7 @@ import (
 )
 
 
-var chs = []rune("qwertyuiopasdfghjklzxcvbnmQWERTYUIOPASDFGHJKLZXCVBNM1234567890!@#$%^&*()_=")
+var chs = []rune("qwertyuiopasdfghjklzxcvbnmQWERTYUIOPASDFGHJKLZXCVBNM1234567890!@#$%^&*()=")
 var accounts_file string = "ACCOUNTS"
 var transactions_file string = "TRANSACTIONS"
 var accounts []string
@@ -86,7 +86,7 @@ func GenerateWorkload(n int) [][]string {
 		defer f.Close()
 
 		for i = 0; i < n; i++ {
-			f.WriteString(strings.Join(res[i], " ") )
+			f.WriteString(strconv.Itoa(i) + " " + strings.Join(res[i], " ") )
 			f.WriteString("\n")
 		}
 

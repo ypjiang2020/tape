@@ -16,6 +16,7 @@ type Elements struct {
 	Responses  []*peer.ProposalResponse
 	lock       sync.Mutex
 	Envelope   *common.Envelope
+	Txid	string
 }
 
 type Assembler struct {

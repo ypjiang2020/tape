@@ -2,6 +2,7 @@ package infra
 
 import (
 	"bytes"
+	"crypto/rand"
 	"math"
 
 	"github.com/golang/protobuf/proto"
@@ -12,7 +13,18 @@ import (
 	"github.com/pkg/errors"
 )
 
-func CreateProposal(signer *Crypto, channel, ccname, version string, args []string) (*peer.Proposal, error) {
+
+func getRandomNonce() ([]byte, error) {
+	key := make([]byte, 24)
+
+	_, err := rand.Read(key)
+	if err != nil {
+		return nil, errors.Wrap(err, "error getting random bytes")
+	}
+	return key, nil
+}
+
+func CreateProposal(txid string, signer *Crypto, channel, ccname, version string, args []string) (*peer.Proposal, string, error) {
 	var argsInByte [][]byte
 	for _, arg := range args {
 		argsInByte = append(argsInByte, []byte(arg))
@@ -28,15 +40,17 @@ func CreateProposal(signer *Crypto, channel, ccname, version string, args []stri
 
 	creator, err := signer.Serialize()
 	if err != nil {
-		return nil, err
+		return nil, "", err
 	}
+	nonce, err := getRandomNonce()
 
-	prop, _, err := protoutil.CreateChaincodeProposal(common.HeaderType_ENDORSER_TRANSACTION, channel, invocation, creator)
+	// prop, txid, err := protoutil.CreateChaincodeProposal(common.HeaderType_ENDORSER_TRANSACTION, channel, invocation, creator)
+	prop, txid, err := protoutil.CreateChaincodeProposalWithTxIDNonceAndTransient(txid, common.HeaderType_ENDORSER_TRANSACTION, channel, invocation, nonce, creator, nil)
 	if err != nil {
-		return nil, err
+		return nil, "", err
 	}
 
-	return prop, nil
+	return prop, txid, nil
 }
 
 func SignProposal(prop *peer.Proposal, signer *Crypto) (*peer.SignedProposal, error) {

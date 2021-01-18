@@ -2,6 +2,7 @@ package infra
 
 import (
 	"context"
+	"strconv"
 
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
@@ -22,7 +23,8 @@ func StartCreateProposal(num int, burst int, r float64, config Config, crypto *C
 	for i := 0; i < num; i++ {
 		chaincodeCtorJSON := chaincodeCtorJSONs[i]
 		// fmt.Println(chaincodeCtorJSON)
-		prop, err := CreateProposal(
+		prop, txid, err := CreateProposal(
+			strconv.Itoa(i) + "_" + getName(20),
 			crypto,
 			config.Channel,
 			config.Chaincode,
@@ -39,6 +41,6 @@ func StartCreateProposal(num int, burst int, r float64, config Config, crypto *C
 			return
 		}
 
-		raw <- &Elements{Proposal: prop}
+		raw <- &Elements{Proposal: prop, Txid: txid}
 	}
 }
