@@ -1,6 +1,7 @@
 package infra
 
 import (
+	"fmt"
 	"bytes"
 	"crypto/rand"
 	"math"
@@ -10,6 +11,7 @@ import (
 	"github.com/hyperledger/fabric-protos-go/orderer"
 	"github.com/hyperledger/fabric-protos-go/peer"
 	"github.com/hyperledger/fabric/protoutil"
+	"github.com/hyperledger/fabric/core/ledger/kvledger/txmgmt/rwsetutil"
 	"github.com/pkg/errors"
 )
 
@@ -122,6 +124,35 @@ func CreateSignedTx(proposal *peer.Proposal, signer *Crypto, resps []*peer.Propo
 		}
 		endorsements = append(endorsements, r.Endorsement)
 	}
+	// dd: open rwset to do some check
+	pRespPayload, err := protoutil.UnmarshalProposalResponsePayload(a1)
+	if err != nil {
+		return nil, err
+	}
+	respPayload, err := protoutil.UnmarshalChaincodeAction(pRespPayload.Extension)
+	if err != nil {
+		return nil, err
+	}
+	var txRWSet *rwsetutil.TxRwSet
+	txRWSet = &rwsetutil.TxRwSet{} 
+	if err = txRWSet.FromProtoBytes(respPayload.Results); err != nil {
+		return nil, err
+	}
+
+	for _, rwset := range txRWSet.NsRwSets {
+		fmt.Println("namespace:", rwset.NameSpace)
+		fmt.Println("read set")
+		for _, rset := range rwset.KvRwSet.Reads {
+			// fmt.Println(rset.GetKey(), rset.GetVersion())
+			fmt.Println(rset.String())
+		}
+		fmt.Println("write set")
+		for _, wset := range rwset.KvRwSet.Writes {
+			fmt.Println(wset.String())
+			
+		}
+	}
+
 	// create ChaincodeEndorsedAction
 	cea := &peer.ChaincodeEndorsedAction{ProposalResponsePayload: a1, Endorsements: endorsements}
 
