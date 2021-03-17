@@ -54,8 +54,9 @@ func (o *Observer) Start(N int32, errorCh chan error, finishCh chan struct{}, no
 
 		fb := r.Type.(*peer.DeliverResponse_FilteredBlock)
 		n = n + int32(len(fb.FilteredBlock.FilteredTransactions))
+		st := time.Now().UnixNano() 
 		for _, tx := range fb.FilteredBlock.FilteredTransactions {
-			fmt.Println(tx.GetTxid(), tx.TxValidationCode)
+			fmt.Println("end:", st, tx.GetTxid(), tx.TxValidationCode)
 		}
 		fmt.Printf("Time %8.2fs\tBlock %6d\tTx %6d\n", time.Since(now).Seconds(), fb.FilteredBlock.Number, len(fb.FilteredBlock.FilteredTransactions))
 	}

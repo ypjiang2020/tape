@@ -29,7 +29,7 @@ func Process(configPath string, num int, burst int, rate float64, logger *log.Lo
 		signed[i] = make(chan *Elements, burst)
 	}
 
-	for i := 0; i < 5; i++ {
+	for i := 0; i < 20; i++ {
 		go assember.StartSigner(raw, signed, errorCh, done)
 		go assember.StartIntegrator(processed, envs, errorCh, done)
 	}

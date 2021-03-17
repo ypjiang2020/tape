@@ -3,6 +3,8 @@ package infra
 import (
 	"context"
 	"strconv"
+	// "time"
+	// "fmt"
 
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
@@ -23,6 +25,8 @@ func StartCreateProposal(num int, burst int, r float64, config Config, crypto *C
 	for i := 0; i < num; i++ {
 		chaincodeCtorJSON := chaincodeCtorJSONs[i]
 		// fmt.Println(chaincodeCtorJSON)
+
+
 		prop, txid, err := CreateProposal(
 			strconv.Itoa(i) + "_" + getName(20),
 			crypto,
@@ -42,5 +46,7 @@ func StartCreateProposal(num int, burst int, r float64, config Config, crypto *C
 		}
 
 		raw <- &Elements{Proposal: prop, Txid: txid}
+		// st := time.Now().UnixNano() 
+	    // fmt.Println("start", st, txid)
 	}
 }

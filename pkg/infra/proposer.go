@@ -2,6 +2,8 @@ package infra
 
 import (
 	"context"
+	"time"
+	"fmt"
 	"io"
 
 	"github.com/hyperledger/fabric-protos-go/common"
@@ -68,6 +70,8 @@ func (p *Proposer) Start(signed, processed chan *Elements, done <-chan struct{},
 		select {
 		case s := <-signed:
 			//send sign proposal to peer for endorsement
+		    st := time.Now().UnixNano() 
+	    	fmt.Println("start:", st, s.Txid)
 			r, err := p.e.ProcessProposal(context.Background(), s.SignedProp)
 			if err != nil || r.Response.Status < 200 || r.Response.Status >= 400 {
 				if r == nil {
@@ -82,6 +86,8 @@ func (p *Proposer) Start(signed, processed chan *Elements, done <-chan struct{},
 			s.Responses = append(s.Responses, r)
 			if len(s.Responses) >= threshold {
 				processed <- s
+		    	st := time.Now().UnixNano() 
+	    		fmt.Println("proposal: ", st, s.Txid)
 			}
 			s.lock.Unlock()
 		case <-done:
@@ -131,6 +137,8 @@ func (b *Broadcaster) Start(envs <-chan *Elements, errorCh chan error, done <-ch
 	for {
 		select {
 		case e := <-envs:
+		    st := time.Now().UnixNano() 
+	    	fmt.Println("sent:", st, e.Txid)
 			err := b.c.Send(e.Envelope)
 			if err != nil {
 				errorCh <- err

@@ -19,5 +19,7 @@
 organizations
 ACCOUNTS
 TRANSACTIONS
+TRANSACTION
 /tape
 log*
+latency*
