@@ -1,5 +1,8 @@
 # tape
 
+# Build
+`go build ./cmd/tape`
+
 # Run
 1. Link to crypto materials: `ln -sf $YOUR_PROJECT/organizations`
 2. Run
@@ -38,3 +41,4 @@ bash scripts/conflict.sh
 # TODO
 1. zipfan distribution workload
 2. add prometheus 
+3. two-phase evaluation: endorsement + others
