@@ -29,7 +29,7 @@ endorsers:
 # we might support multi-committer in the future for more complex test scenario,
 # i.e. consider tx committed only if it's done on >50% of nodes. But for now,
 # it seems sufficient to support single committer.
-committer: *peer2
+committer: *peer3
 orderer: *orderer1
 
 # Invocation configs
@@ -42,3 +42,6 @@ private_key: ./organizations/peerOrganizations/org1.example.com/users/User1@org1
 sign_cert: ./organizations/peerOrganizations/org1.example.com/users/User1@org1.example.com/msp/signcerts/User1@org1.example.com-cert.pem
 num_of_conn: 8
 client_per_conn: 8
+
+check_txid: false
+check_rwset: false

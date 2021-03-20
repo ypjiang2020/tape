@@ -22,7 +22,9 @@ type Config struct {
 	SignCert      string   `yaml:"sign_cert"`
 	NumOfConn     int      `yaml:"num_of_conn"`
 	ClientPerConn int      `yaml:"client_per_conn"`
-	EndorserGroups int      `yaml:"endorser_groups"`
+	EndorserGroups int     `yaml:"endorser_groups"`
+	Check_Txid     bool     `yaml:"check_txid"`
+	Check_rwset    bool     `yaml:"check_rwset"`
 }
 
 type Node struct {

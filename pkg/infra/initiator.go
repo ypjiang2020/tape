@@ -25,10 +25,12 @@ func StartCreateProposal(num int, burst int, r float64, config Config, crypto *C
 	for i := 0; i < num; i++ {
 		chaincodeCtorJSON := chaincodeCtorJSONs[i]
 		// fmt.Println(chaincodeCtorJSON)
-
-
+		temptxid := strconv.Itoa(i) + "_" + getName(20)
+		if config.Check_Txid {
+			temptxid = ""
+		}
 		prop, txid, err := CreateProposal(
-			strconv.Itoa(i) + "_" + getName(20),
+			temptxid,
 			crypto,
 			config.Channel,
 			config.Chaincode,

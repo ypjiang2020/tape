@@ -23,10 +23,11 @@ type Assembler struct {
 	Signer *Crypto
 	EndorserGroups int
 	Abort int32
+	Conf Config
 }
 
 func (a *Assembler) assemble(e *Elements) (*Elements, error) {
-	env, err := CreateSignedTx(e.Proposal, a.Signer, e.Responses)
+	env, err := CreateSignedTx(e.Proposal, a.Signer, e.Responses, a.Conf.Check_rwset)
 	if err != nil {
 		return nil, err
 	}

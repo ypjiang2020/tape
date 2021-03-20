@@ -44,15 +44,24 @@ func CreateProposal(txid string, signer *Crypto, channel, ccname, version string
 	if err != nil {
 		return nil, "", err
 	}
-	nonce, err := getRandomNonce()
 
-	// prop, txid, err := protoutil.CreateChaincodeProposal(common.HeaderType_ENDORSER_TRANSACTION, channel, invocation, creator)
-	prop, txid, err := protoutil.CreateChaincodeProposalWithTxIDNonceAndTransient(txid, common.HeaderType_ENDORSER_TRANSACTION, channel, invocation, nonce, creator, nil)
-	if err != nil {
-		return nil, "", err
+	if txid == "" {
+		prop, txid, err := protoutil.CreateChaincodeProposal(common.HeaderType_ENDORSER_TRANSACTION, channel, invocation, creator)
+		if err != nil {
+			return nil, "", err
+		}
+		return prop, txid, nil
+	} else {
+		// disable txid check in core/endorser/msgvalidation.go:Validate and
+		// protoutil/proputils.go:ComputeTxID (v2)
+		nonce, err := getRandomNonce()
+		prop, txid, err := protoutil.CreateChaincodeProposalWithTxIDNonceAndTransient(txid, common.HeaderType_ENDORSER_TRANSACTION, channel, invocation, nonce, creator, nil)
+		if err != nil {
+			return nil, "", err
+		}
+		return prop, txid, nil
+
 	}
-
-	return prop, txid, nil
 }
 
 func SignProposal(prop *peer.Proposal, signer *Crypto) (*peer.SignedProposal, error) {
@@ -69,7 +78,7 @@ func SignProposal(prop *peer.Proposal, signer *Crypto) (*peer.SignedProposal, er
 	return &peer.SignedProposal{ProposalBytes: propBytes, Signature: sig}, nil
 }
 
-func CreateSignedTx(proposal *peer.Proposal, signer *Crypto, resps []*peer.ProposalResponse) (*common.Envelope, error) {
+func CreateSignedTx(proposal *peer.Proposal, signer *Crypto, resps []*peer.ProposalResponse, check_rwset bool) (*common.Envelope, error) {
 	if len(resps) == 0 {
 		return nil, errors.Errorf("at least one proposal response is required")
 	}
@@ -124,35 +133,36 @@ func CreateSignedTx(proposal *peer.Proposal, signer *Crypto, resps []*peer.Propo
 		}
 		endorsements = append(endorsements, r.Endorsement)
 	}
-	// dd: open rwset to do some check
-	pRespPayload, err := protoutil.UnmarshalProposalResponsePayload(a1)
-	if err != nil {
-		return nil, err
-	}
-	respPayload, err := protoutil.UnmarshalChaincodeAction(pRespPayload.Extension)
-	if err != nil {
-		return nil, err
-	}
-	var txRWSet *rwsetutil.TxRwSet
-	txRWSet = &rwsetutil.TxRwSet{} 
-	if err = txRWSet.FromProtoBytes(respPayload.Results); err != nil {
-		return nil, err
-	}
-
-	for _, rwset := range txRWSet.NsRwSets {
-		fmt.Println("namespace:", rwset.NameSpace)
-		fmt.Println("read set")
-		for _, rset := range rwset.KvRwSet.Reads {
-			// fmt.Println(rset.GetKey(), rset.GetVersion())
-			fmt.Println(rset.String())
+	if check_rwset {
+		// dd: open rwset to do some check
+		pRespPayload, err := protoutil.UnmarshalProposalResponsePayload(a1)
+		if err != nil {
+			return nil, err
 		}
-		fmt.Println("write set")
-		for _, wset := range rwset.KvRwSet.Writes {
-			fmt.Println(wset.String())
-			
+		respPayload, err := protoutil.UnmarshalChaincodeAction(pRespPayload.Extension)
+		if err != nil {
+			return nil, err
+		}
+		var txRWSet *rwsetutil.TxRwSet
+		txRWSet = &rwsetutil.TxRwSet{} 
+		if err = txRWSet.FromProtoBytes(respPayload.Results); err != nil {
+			return nil, err
+		}
+
+		for _, rwset := range txRWSet.NsRwSets {
+			fmt.Println("namespace:", rwset.NameSpace)
+			fmt.Println("read set")
+			for _, rset := range rwset.KvRwSet.Reads {
+				// fmt.Println(rset.GetKey(), rset.GetVersion())
+				fmt.Println(rset.String())
+			}
+			fmt.Println("write set")
+			for _, wset := range rwset.KvRwSet.Writes {
+				fmt.Println(wset.String())
+
+			}
 		}
 	}
-
 	// create ChaincodeEndorsedAction
 	cea := &peer.ChaincodeEndorsedAction{ProposalResponsePayload: a1, Endorsements: endorsements}
 
