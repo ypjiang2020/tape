@@ -12,24 +12,26 @@ for i in range(3):
 
 for line in sys.stdin:
     temp = line.split()
+    if "start: " in line or "proposal: " in line or "sent: " in line or "end: " in line:
+        if '_' in temp[2]:
+            idx = int(temp[2].split('_')[0])
+        else:
+            idx = int(temp[2], 16)
+
     if "start: " in line:
-        idx = int(temp[2].split('_')[0])
         times[idx] = int(temp[1])
         log[idx] = []
     if "proposal: " in line:
-        idx = int(temp[2].split('_')[0])
         log[idx].append((float(temp[1]) - times[idx])/1e6)
         fig[0].append((float(temp[1]) - times[idx])/1e6)
         # print(temp[2], "endorsement_breakdown", (float(temp[1]) - times[temp[2]])/1e6)
         times[idx] = int(temp[1])
     if "sent: " in line:
-        idx = int(temp[2].split('_')[0])
         log[idx].append((float(temp[1]) - times[idx])/1e6)
         fig[1].append((float(temp[1]) - times[idx])/1e6)
         # print(temp[2], "before_order", (float(temp[1]) - times[temp[2]])/1e6)
         times[idx] = int(temp[1])
     if "end: " in line:
-        idx = int(temp[2].split('_')[0])
         ids.append(idx)
         log[idx].append((float(temp[1]) - times[idx])/1e6)
         fig[2].append((float(temp[1]) - times[idx])/1e6)
