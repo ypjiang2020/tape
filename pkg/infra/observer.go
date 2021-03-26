@@ -41,7 +41,7 @@ func (o *Observer) Start(N int32, errorCh chan error, finishCh chan struct{}, no
 	defer close(finishCh)
 	o.logger.Debugf("start observer")
 	var n int32 = 0
-	for n + (*abort) < N {
+	for n+(*abort) < N {
 		r, err := o.d.Recv()
 		if err != nil {
 			errorCh <- err
@@ -51,13 +51,20 @@ func (o *Observer) Start(N int32, errorCh chan error, finishCh chan struct{}, no
 			errorCh <- errors.Errorf("received nil message, but expect a valid block instead. You could look into your peer logs for more info")
 			return
 		}
+		switch x := r.Type.(type) {
+		case *peer.DeliverResponse_Status:
+			fmt.Println(x.Status)
+			time.Sleep(time.Duration(5) * time.Second)
+		case *peer.DeliverResponse_FilteredBlock:
+			fb := x // r.Type.(*peer.DeliverResponse_FilteredBlock)
+			n = n + int32(len(fb.FilteredBlock.FilteredTransactions))
+			st := time.Now().UnixNano()
+			for _, tx := range fb.FilteredBlock.FilteredTransactions {
+				fmt.Println("end:", st, tx.GetTxid(), tx.TxValidationCode)
+			}
+			fmt.Printf("Time %8.2fs\tBlock %6d\tTx %6d\n", time.Since(now).Seconds(), fb.FilteredBlock.Number, len(fb.FilteredBlock.FilteredTransactions))
 
-		fb := r.Type.(*peer.DeliverResponse_FilteredBlock)
-		n = n + int32(len(fb.FilteredBlock.FilteredTransactions))
-		st := time.Now().UnixNano() 
-		for _, tx := range fb.FilteredBlock.FilteredTransactions {
-			fmt.Println("end:", st, tx.GetTxid(), tx.TxValidationCode)
 		}
-		fmt.Printf("Time %8.2fs\tBlock %6d\tTx %6d\n", time.Since(now).Seconds(), fb.FilteredBlock.Number, len(fb.FilteredBlock.FilteredTransactions))
+
 	}
 }
