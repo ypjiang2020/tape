@@ -27,10 +27,11 @@ Save output to file for analysis: `./tape -c config.yaml -n 10000  > log.transac
 ```
 cat log.transactions | python3 scripts/latency.py > latency.log  
 ```
+
 **Output format:** txid [#1, #2, #2]
 1. endorseement: clients sends proposal => client receives enough endorsement
 2. local_process: clients generate signed transaction based on endorsements
-2. local_process: clients generate signed transaction based on endorsements 3. consensus & commit: clients send signed transaction => clients receive response (including consensus, validation, and commit)
+3. consensus & commit: clients send signed transaction => clients receive response (including consensus, validation, and commit)
 
 
 ## conflict rate
