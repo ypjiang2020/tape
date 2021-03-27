@@ -1,27 +1,30 @@
 # Definition of nodes
+peer0: &peer0
+  addr: localhost:7051
+peer1: &peer1
+  addr: localhost:8051
+peer2: &peer2
+  addr: localhost:9051
+peer3: &peer3
+  addr: localhost:10051
 
 orderer1: &orderer1
   addr: localhost:7050
 
-endorser: &endorser
-  addr: endorser:7051
-local_fastpeer: &local_fastpeer
-  addr: fastpeer:7051
-local_storage: &local_storage
-  addr: storage:7051
-local_orderer1: &local_orderer1
-  addr: orderer:7050
 
 
 # Nodes to interact with
-endorser_groups: 1
+endorser_groups: 4
 endorsers:
-  - *endorser
+  - *peer0
+  - *peer1
+  - *peer2
+  - *peer3
 # we might support multi-committer in the future for more complex test scenario,
 # i.e. consider tx committed only if it's done on >50% of nodes. But for now,
 # it seems sufficient to support single committer.
-committer: *local_storage
-orderer: *local_orderer1
+committer: *peer1
+orderer: *orderer1
 
 # Invocation configs
 channel: mychannel
@@ -29,8 +32,8 @@ chaincode: smallbank
 # args:
 #   - GetAllAssets
 mspid: Org1MSP
-private_key: ./local/peerOrganizations/hlf.com/users/User1@hlf.com/msp/keystore/priv_sk
-sign_cert: ./local/peerOrganizations/hlf.com/users/User1@hlf.com/msp/signcerts/User1@hlf.com-cert.pem
+private_key: ./original/peerOrganizations/org1.example.com/users/User1@org1.example.com/msp/keystore/priv_sk
+sign_cert: ./original/peerOrganizations/org1.example.com/users/User1@org1.example.com/msp/signcerts/User1@org1.example.com-cert.pem
 num_of_conn: 8
 client_per_conn: 8
 
