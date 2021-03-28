@@ -1,10 +1,9 @@
 package infra
 
 import (
-	"sync"
 	"math/rand"
+	"sync"
 	"sync/atomic"
-
 
 	"github.com/hyperledger/fabric-protos-go/common"
 	"github.com/hyperledger/fabric-protos-go/peer"
@@ -16,16 +15,20 @@ type Elements struct {
 	Responses  []*peer.ProposalResponse
 	lock       sync.Mutex
 	Envelope   *common.Envelope
-	Txid	string
+	Txid       string
 }
 
 type Assembler struct {
-	Signer *Crypto
+	Signer         *Crypto
 	EndorserGroups int
-	Abort int32
-	Conf Config
+	Abort          int32
+	Conf           Config
 }
 
+func (a *Assembler) Assemble(e *Elements) (*Elements, error) {
+	e, err := a.assemble(e)
+	return e, err
+}
 func (a *Assembler) assemble(e *Elements) (*Elements, error) {
 	env, err := CreateSignedTx(e.Proposal, a.Signer, e.Responses, a.Conf.Check_rwset)
 	if err != nil {

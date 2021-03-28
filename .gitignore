@@ -20,6 +20,7 @@ organizations
 ACCOUNTS
 TRANSACTIONS
 TRANSACTION
+ENDORSEMENT
 /tape
 log*
 latency*

@@ -5,7 +5,8 @@
 
 # Run
 1. Link to crypto materials: `ln -sf $YOUR_PROJECT/organizations`
-2. Run
+2. End-to-End Run
+    Set `e2e: true` in config.yaml. 
     ```bash
     # if(ACCOUNTS not exists):
     #   create ACCOUNTS  
@@ -13,13 +14,25 @@
     #   send transactions (i.e. transfer money from A to B) 
     # end
 
-    # typically
+    # typically 
     rm ACCOUNTS # clean old accounts
     ./tape -c config.yaml -n 1000  # create 1000 accounts according config.yaml
     ./tape -c config.yaml -n 10000  # send 10000 transactions using ACCOUNTS
-
     ```
+3. Breakdown
+    Set `e2e: false` in config.yaml. 
+    ```bash
+    # if(EDNORSEMENT not exists):
+    #   start phase1 to create ENDORSEMENT: send proposals to endorsements 
+    # else:
+    #   start phase2 to broadcast transactions to orderer (read from ENDORSEMENT)
+    # end
 
+    # typically 
+    rm ENDORSEMENT # clean old accounts
+    ./tape -c config.yaml -n 10000  # create 10000 endorsements
+    ./tape -c config.yaml -n 10000  # broadcast 10000 transactions 
+    ```
 # Result
 Save output to file for analysis: `./tape -c config.yaml -n 10000  > log.transactions `
 
@@ -42,4 +55,3 @@ bash scripts/conflict.sh
 # TODO
 1. zipfan distribution workload
 2. add prometheus 
-3. two-phase evaluation: endorsement + others
