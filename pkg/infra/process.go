@@ -8,12 +8,45 @@ import (
 	"time"
 
 	"github.com/hyperledger/fabric-protos-go/common"
+	"github.com/hyperledger/fabric-protos-go/peer"
 	log "github.com/sirupsen/logrus"
 )
 
 var endorsement_file = "ENDORSEMENT"
 
+var (
+	buffer_start    []string
+	buffer_proposal []string
+	buffer_sent     []string
+	buffer_end      []string
+	buffer_tot      []string
+	g_num           int
+	g_block         []*peer.DeliverResponse_FilteredBlock
+	g_timestampe    []int64
+)
+
+func print_benchmark() {
+	// output log
+	for i := range buffer_start {
+		fmt.Println(buffer_start[i])
+	}
+	for i := range buffer_proposal {
+		fmt.Println(buffer_proposal[i])
+	}
+	for i := range buffer_sent {
+		fmt.Println(buffer_sent[i])
+	}
+	for i := range g_block {
+		fmt.Println("end:", g_timestampe[i], len(g_block[i].FilteredBlock.FilteredTransactions))
+
+	}
+	for i := range buffer_tot {
+		fmt.Println(buffer_tot[i])
+	}
+}
+
 func e2e(config Config, num int, burst int, rate float64, logger *log.Logger) error {
+	g_num = num
 	crypto, err := config.LoadCrypto()
 	if err != nil {
 		return err
@@ -31,7 +64,7 @@ func e2e(config Config, num int, burst int, rate float64, logger *log.Logger) er
 		signed[i] = make(chan *Elements, burst)
 	}
 
-	for i := 0; i < 5; i++ {
+	for i := 0; i < 10; i++ {
 		go assember.StartSigner(raw, signed, errorCh, done)
 		go assember.StartIntegrator(processed, envs, errorCh, done)
 	}
@@ -63,6 +96,8 @@ func e2e(config Config, num int, burst int, rate float64, logger *log.Logger) er
 		case <-finishCh:
 			duration := time.Since(start)
 			close(done)
+			// output log
+			print_benchmark()
 
 			logger.Infof("Completed processing transactions.")
 			fmt.Printf("tx: %d, duration: %+v, tps: %f\n", num, duration, float64(num)/duration.Seconds())
@@ -103,9 +138,7 @@ func breakdown_phase1(config Config, num int, burst int, rate float64, logger *l
 
 	// phase1: send proposals to endorsers
 	var cnt int32 = 0
-	mfile, _ := os.Create(endorsement_file)
-	defer mfile.Close()
-	mw := bufio.NewWriter(mfile)
+	var buffer [][]byte
 	for i := 0; i < num; i++ {
 		select {
 		case err = <-errorCh:
@@ -122,20 +155,29 @@ func breakdown_phase1(config Config, num int, burst int, rate float64, logger *l
 				fmt.Println("error: marshal envelop")
 				return err
 			}
-			mw.Write(bytes)
-			mw.WriteByte('\n')
+			buffer = append(buffer, bytes)
 			if cnt+assember.Abort >= int32(num) {
 				break
 			}
 		}
 	}
-	mw.Flush()
 	duration := time.Since(start)
 	close(done)
+	// output log
+	print_benchmark()
 
 	logger.Infof("Completed endorsing transactions.")
 	fmt.Printf("tx: %d, duration: %+v, tps: %f\n", num, duration, float64(num)/duration.Seconds())
 	fmt.Printf("abort rate because of the different ledger height: %d %.2f%%\n", assember.Abort, float64(assember.Abort)/float64(num)*100)
+	// persistency
+	mfile, _ := os.Create(endorsement_file)
+	defer mfile.Close()
+	mw := bufio.NewWriter(mfile)
+	for i := range buffer {
+		mw.Write(buffer[i])
+		mw.WriteByte('\n')
+	}
+	mw.Flush()
 	return nil
 }
 func breakdown_phase2(config Config, num int, burst int, rate float64, logger *log.Logger) error {
@@ -187,6 +229,7 @@ func breakdown_phase2(config Config, num int, burst int, rate float64, logger *l
 		case <-finishCh:
 			duration := time.Since(start)
 			close(done)
+			print_benchmark()
 
 			logger.Infof("Completed processing transactions.")
 			fmt.Printf("tx: %d, duration: %+v, tps: %f\n", num, duration, float64(num)/duration.Seconds())
@@ -202,12 +245,15 @@ func Process(configPath string, num int, burst int, rate float64, logger *log.Lo
 		return err
 	}
 	if config.End2end {
+		fmt.Println("e2e")
 		return e2e(config, num, burst, rate, logger)
 	} else {
 		if _, err := os.Stat(endorsement_file); err == nil {
+			fmt.Println("phase2")
 			// phase2: broadcast transactions to order
 			return breakdown_phase2(config, num, burst, rate, logger)
 		} else {
+			fmt.Println("phase1")
 			// phase1: send proposals to endorsers {
 			return breakdown_phase1(config, num, burst, rate, logger)
 		}

@@ -2,9 +2,9 @@ package infra
 
 import (
 	"context"
-	"time"
 	"fmt"
 	"io"
+	"time"
 
 	"github.com/hyperledger/fabric-protos-go/common"
 	"github.com/hyperledger/fabric-protos-go/orderer"
@@ -44,7 +44,7 @@ func (ps *Proposers) Start(signed []chan *Elements, processed chan *Elements, do
 		// peer connection should be config.ClientPerConn * config.NumOfConn
 		for k := 0; k < config.ClientPerConn; k++ {
 			for j := 0; j < config.NumOfConn; j++ {
-				go ps.workers[i][j].Start(signed[i], processed, done, int(len(config.Endorsers) / config.EndorserGroups))
+				go ps.workers[i][j].Start(signed[i], processed, done, int(len(config.Endorsers)/config.EndorserGroups), k, j)
 			}
 		}
 	}
@@ -65,13 +65,14 @@ func CreateProposer(node Node, logger *log.Logger) (*Proposer, error) {
 	return &Proposer{e: endorser, Addr: node.Addr, logger: logger}, nil
 }
 
-func (p *Proposer) Start(signed, processed chan *Elements, done <-chan struct{}, threshold int) {
+func (p *Proposer) Start(signed, processed chan *Elements, done <-chan struct{}, threshold int, ii int, jj int) {
 	for {
 		select {
 		case s := <-signed:
 			//send sign proposal to peer for endorsement
-		    st := time.Now().UnixNano() 
-	    	fmt.Println("start:", st, s.Txid)
+			// todo
+			st := time.Now().UnixNano()
+			buffer_start = append(buffer_start, fmt.Sprintf("start: %d %s %d %d", st, s.Txid, ii, jj))
 			r, err := p.e.ProcessProposal(context.Background(), s.SignedProp)
 			if err != nil || r.Response.Status < 200 || r.Response.Status >= 400 {
 				if r == nil {
@@ -86,8 +87,9 @@ func (p *Proposer) Start(signed, processed chan *Elements, done <-chan struct{},
 			s.Responses = append(s.Responses, r)
 			if len(s.Responses) >= threshold {
 				processed <- s
-		    	st := time.Now().UnixNano() 
-	    		fmt.Println("proposal: ", st, s.Txid)
+				// todo
+				st := time.Now().UnixNano()
+				buffer_proposal = append(buffer_proposal, fmt.Sprintf("proposal: %d %s", st, s.Txid))
 			}
 			s.lock.Unlock()
 		case <-done:
@@ -137,8 +139,9 @@ func (b *Broadcaster) Start(envs <-chan *Elements, errorCh chan error, done <-ch
 	for {
 		select {
 		case e := <-envs:
-		    st := time.Now().UnixNano() 
-	    	fmt.Println("sent:", st, e.Txid)
+			// todo
+			st := time.Now().UnixNano()
+			buffer_sent = append(buffer_sent, fmt.Sprintf("sent: %d %s", st, e.Txid))
 			err := b.c.Send(e.Envelope)
 			if err != nil {
 				errorCh <- err

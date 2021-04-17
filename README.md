@@ -5,7 +5,7 @@
 
 # Run
 1. Link to crypto materials: `ln -sf $YOUR_PROJECT/organizations`
-2. End-to-End Run
+2. End-to-End Run     
     Set `e2e: true` in config.yaml. 
     ```bash
     # if(ACCOUNTS not exists):
@@ -19,7 +19,7 @@
     ./tape -c config.yaml -n 1000  # create 1000 accounts according config.yaml
     ./tape -c config.yaml -n 10000  # send 10000 transactions using ACCOUNTS
     ```
-3. Breakdown
+3. Breakdown      
     Set `e2e: false` in config.yaml. 
     ```bash
     # if(EDNORSEMENT not exists):
