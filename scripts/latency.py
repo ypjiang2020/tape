@@ -10,6 +10,7 @@ fig = {}
 for i in range(3):
     fig[i] = []
 
+labels = ['endorsement', 'assemble_endorsement', 'consensus&commit']
 for line in sys.stdin:
     temp = line.split()
     if "start: " in line or "proposal: " in line or "sent: " in line or "end: " in line:
@@ -21,35 +22,38 @@ for line in sys.stdin:
     if "start: " in line:
         ids.append(idx)
         times[idx] = int(temp[1])
-        log[idx] = [int(temp[3]), int(temp[4])]
+        log[idx] = [int(temp[3]), int(temp[4])] # clientid, connectionid
     if "proposal: " in line:
-        try:
-            log[idx].append((float(temp[1]) - times[idx])/1e6)
-            fig[0].append((float(temp[1]) - times[idx])/1e6)
-        # print(temp[2], "endorsement_breakdown", (float(temp[1]) - times[temp[2]])/1e6)
-            times[idx] = int(temp[1])
-        except:
-            pass
+        # breakdown_endorsement
+        log[idx].append((float(temp[1]) - times[idx])/1e6)
+        fig[0].append((float(temp[1]) - times[idx])/1e6)
+        times[idx] = int(temp[1])
     if "sent: " in line:
+        # breakdown_asemble_endorsment(not important)
         log[idx].append((float(temp[1]) - times[idx])/1e6)
         fig[1].append((float(temp[1]) - times[idx])/1e6)
-        # print(temp[2], "before_order", (float(temp[1]) - times[temp[2]])/1e6)
         times[idx] = int(temp[1])
     if "end: " in line:
+        # breakdown_consensus&commit
         log[idx].append((float(temp[1]) - times[idx])/1e6)
         fig[2].append((float(temp[1]) - times[idx])/1e6)
-        # print(temp[2], "consensus_&_commit", (float(temp[1]) - times[temp[2]])/1e6)
 
-for tx in ids:
-    try:
-        print(tx, log[tx])
-    except:
-        pass
+# for tx in ids:
+    # print(tx, log[tx])
+
+# for i in range(3):
+#     plt.plot(fig[i], label = labels[i])
+# plt.xlabel("time")
+# plt.ylabel("latency (ms)")
+# plt.title("breakdown")
+# plt.legend()
+# plt.savefig("latency_breakdown.pdf")
 
 for i in range(3):
-    plt.plot(fig[i], label = str(i))
-plt.xlabel("time")
-plt.ylabel("latency (ms)")
-plt.title(" latency")
-plt.legend()
-plt.savefig("latency_ori_fifo.pdf")
+    print(labels[i])
+    fig[i].sort()
+    print("\tmean", np.mean(fig[i]))
+    print("\t99_tail", fig[i][int(len(fig[i]) * 0.99)])
+    print("\t95_tail", fig[i][int(len(fig[i]) * 0.95)])
+    print("\t90_tail", fig[i][int(len(fig[i]) * 0.90)])
+    print("\t50_tail", fig[i][int(len(fig[i]) * 0.50)])
