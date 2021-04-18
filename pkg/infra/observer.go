@@ -1,6 +1,7 @@
 package infra
 
 import (
+	"fmt"
 	"time"
 
 	"github.com/hyperledger/fabric-protos-go/peer"
@@ -54,12 +55,9 @@ func (o *Observer) Start(N int32, errorCh chan error, finishCh chan struct{}, no
 		fb := r.Type.(*peer.DeliverResponse_FilteredBlock)
 		n = n + int32(len(fb.FilteredBlock.FilteredTransactions))
 		st := time.Now().UnixNano()
-		g_block = append(g_block, fb)
-		g_timestampe = append(g_timestampe, st)
-		// for _, tx := range fb.FilteredBlock.FilteredTransactions {
-		// 	// todo
-		// 	buffer_end = append(buffer_end, fmt.Sprintf("end: %d %s %s", st, tx.GetTxid(), tx.TxValidationCode))
-		// }
+		for _, tx := range fb.FilteredBlock.FilteredTransactions {
+			buffer_end <- fmt.Sprintf("end: %d %s %s", st, tx.GetTxid(), tx.TxValidationCode)
+		}
 		// buffer_tot = append(buffer_tot, fmt.Sprintf("Time %8.2fs\tBlock %6d\tTx %6d\n", time.Since(now).Seconds(), fb.FilteredBlock.Number, len(fb.FilteredBlock.FilteredTransactions)))
 	}
 }

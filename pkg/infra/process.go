@@ -8,40 +8,37 @@ import (
 	"time"
 
 	"github.com/hyperledger/fabric-protos-go/common"
-	"github.com/hyperledger/fabric-protos-go/peer"
 	log "github.com/sirupsen/logrus"
 )
 
 var endorsement_file = "ENDORSEMENT"
 
 var (
-	buffer_start    []string
-	buffer_proposal []string
-	buffer_sent     []string
-	buffer_end      []string
-	buffer_tot      []string
+	MAX_BUF         = 100010
+	buffer_start    = make(chan string, MAX_BUF) // start: timestamp txid clientid connectionid
+	buffer_proposal = make(chan string, MAX_BUF) // proposal: timestamp txid
+	buffer_sent     = make(chan string, MAX_BUF) // sent: timestamp txid
+	buffer_end      = make(chan string, MAX_BUF) // end: timestamp txid [VALID/MVCC]
+	buffer_tot      = make(chan string, MAX_BUF) // null
 	g_num           int
-	g_block         []*peer.DeliverResponse_FilteredBlock
-	g_timestampe    []int64
 )
 
 func print_benchmark() {
 	// output log
-	for i := range buffer_start {
-		fmt.Println(buffer_start[i])
+	for len(buffer_start) > 0 {
+		fmt.Println(<-buffer_start)
 	}
-	for i := range buffer_proposal {
-		fmt.Println(buffer_proposal[i])
+	for len(buffer_proposal) > 0 {
+		fmt.Println(<-buffer_proposal)
 	}
-	for i := range buffer_sent {
-		fmt.Println(buffer_sent[i])
+	for len(buffer_sent) > 0 {
+		fmt.Println(<-buffer_sent)
 	}
-	for i := range g_block {
-		fmt.Println("end:", g_timestampe[i], len(g_block[i].FilteredBlock.FilteredTransactions))
-
+	for len(buffer_end) > 0 {
+		fmt.Println(<-buffer_end)
 	}
-	for i := range buffer_tot {
-		fmt.Println(buffer_tot[i])
+	for len(buffer_tot) > 0 {
+		fmt.Println(<-buffer_tot)
 	}
 }
 
@@ -239,11 +236,12 @@ func breakdown_phase2(config Config, num int, burst int, rate float64, logger *l
 
 }
 
-func Process(configPath string, num int, burst int, rate float64, logger *log.Logger) error {
+func Process(configPath string, num int, burst int, rate float64, e bool, logger *log.Logger) error {
 	config, err := LoadConfig(configPath)
 	if err != nil {
 		return err
 	}
+	config.End2end = e
 	if config.End2end {
 		fmt.Println("e2e")
 		return e2e(config, num, burst, rate, logger)

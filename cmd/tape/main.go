@@ -23,6 +23,7 @@ var (
 	num     = run.Flag("number", "Number of tx for shot").Required().Short('n').Int()
 	rate    = run.Flag("rate", "[Optional] Creates tx rate, default 0 as unlimited").Default("0").Float64()
 	burst   = run.Flag("burst", "[Optional] Burst size for Tape, should bigger than rate").Default("1000").Int()
+	e2e     = run.Flag("e2e", "end2end").Required().Bool()
 	version = app.Command("version", "Show version information")
 )
 
@@ -43,7 +44,7 @@ func main() {
 		fmt.Printf(infra.GetVersionInfo())
 	case run.FullCommand():
 		checkArgs(rate, burst, logger)
-		err = infra.Process(*con, *num, *burst, *rate, logger)
+		err = infra.Process(*con, *num, *burst, *rate, *e2e, logger)
 	default:
 		err = errors.Errorf("invalid command: %s", fullCmd)
 	}
