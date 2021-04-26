@@ -1,21 +1,19 @@
 package infra
 
 import (
-	"strconv"
-	"fmt"
-	"os"
-	"math/rand"
-	"time"
 	"bufio"
+	"fmt"
+	"math/rand"
+	"os"
+	"strconv"
 	"strings"
+	"time"
 )
-
 
 var chs = []rune("qwertyuiopasdfghjklzxcvbnmQWERTYUIOPASDFGHJKLZXCVBNM1234567890!@#$%^&*()=")
 var accounts_file string = "ACCOUNTS"
 var transactions_file string = "TRANSACTIONS"
 var accounts []string
-
 
 func getName(n int) string {
 	b := make([]rune, n)
@@ -23,6 +21,11 @@ func getName(n int) string {
 		b[i] = chs[rand.Intn(len(chs))]
 	}
 	return string(b)
+}
+
+func randomId(n int) int {
+	res := rand.Intn(n)
+	return res
 }
 
 func generate() []string {
@@ -37,14 +40,14 @@ func generate() []string {
 	if transactions_type == "transfer_money" {
 		src := rand.Intn(len(accounts))
 		dst := rand.Intn(len(accounts)) // maybe same
-		// TODO: support other transactions 
+		// TODO: support other transactions
 		// (e.g., Amalgamate, TransactionsSavings, WriteCheck, DepositChecking)
-		res = append(res, "SendPayment") 
+		res = append(res, "SendPayment")
 		res = append(res, accounts[src])
 		res = append(res, accounts[dst])
 		res = append(res, "1")
 	} else {
-	   	idx := getName(64)
+		idx := getName(64)
 		res = append(res, "CreateAccount")
 		res = append(res, idx)
 		res = append(res, idx)
@@ -64,7 +67,7 @@ func GenerateWorkload(n int) [][]string {
 		fmt.Printf("transfer money: %d\n", n)
 
 		f, _ := os.Open(accounts_file)
-		input := bufio.NewScanner(f) 
+		input := bufio.NewScanner(f)
 		for input.Scan() {
 			accounts = append(accounts, input.Text())
 		}
@@ -79,20 +82,20 @@ func GenerateWorkload(n int) [][]string {
 	if _, err := os.Stat(accounts_file); err == nil {
 		// save transactions to file for checking
 		os.Remove(transactions_file)
-		f, err := os.Create(transactions_file) 
+		f, err := os.Create(transactions_file)
 		if err != nil {
 			fmt.Println("create file failed", err)
 		}
 		defer f.Close()
 
 		for i = 0; i < n; i++ {
-			f.WriteString(strconv.Itoa(i) + " " + strings.Join(res[i], " ") )
+			f.WriteString(strconv.Itoa(i) + " " + strings.Join(res[i], " "))
 			f.WriteString("\n")
 		}
 
 	} else {
-		// save accounts to file 
-		f, err := os.Create(accounts_file) 
+		// save accounts to file
+		f, err := os.Create(accounts_file)
 		if err != nil {
 			fmt.Println("create file failed", err)
 		}
