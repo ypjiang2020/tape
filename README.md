@@ -22,13 +22,13 @@
 3. Breakdown      
     ```bash
     # if(EDNORSEMENT not exists):
-    #   start phase1 to create ENDORSEMENT: send proposals to endorsements 
+    #   start phase1 to create ENDORSEMENT: send proposals to endorsers
     # else:
     #   start phase2 to broadcast transactions to orderer (read from ENDORSEMENT)
     # end
 
     # typically 
-    rm ENDORSEMENT # clean old accounts
+    rm ENDORSEMENT # clean old endorsements
     ./tape --no-e2e --config config.yaml -n 10000  # create 10000 endorsements
     ./tape --no-e2e --config config.yaml -n 10000  # broadcast 10000 transactions 
     ```
