@@ -1,7 +1,8 @@
 # tape
 
 # Build
-`go build ./cmd/tape`
+- local: `go build ./cmd/tape`       
+- docker: `docker build -f Dockerfile -t tape .`
 
 # Run
 1. Link to crypto materials: `ln -sf $YOUR_PROJECT/organizations`
