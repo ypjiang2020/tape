@@ -6,7 +6,6 @@
 # Run
 1. Link to crypto materials: `ln -sf $YOUR_PROJECT/organizations`
 2. End-to-End Run     
-    Set `e2e: true` in config.yaml. 
     ```bash
     # if(ACCOUNTS not exists):
     #   create ACCOUNTS  
@@ -16,11 +15,10 @@
 
     # typically 
     rm ACCOUNTS # clean old accounts
-    ./tape -c config.yaml -n 1000  # create 1000 accounts according config.yaml
-    ./tape -c config.yaml -n 10000  # send 10000 transactions using ACCOUNTS
+    ./tape --e2e --config config.yaml -n 1000  # create 1000 accounts according config.yaml
+    ./tape --e2e --config config.yaml -n 10000  # send 10000 transactions using ACCOUNTS
     ```
 3. Breakdown      
-    Set `e2e: false` in config.yaml. 
     ```bash
     # if(EDNORSEMENT not exists):
     #   start phase1 to create ENDORSEMENT: send proposals to endorsements 
@@ -30,8 +28,8 @@
 
     # typically 
     rm ENDORSEMENT # clean old accounts
-    ./tape -c config.yaml -n 10000  # create 10000 endorsements
-    ./tape -c config.yaml -n 10000  # broadcast 10000 transactions 
+    ./tape --no-e2e --config config.yaml -n 10000  # create 10000 endorsements
+    ./tape --no-e2e --config config.yaml -n 10000  # broadcast 10000 transactions 
     ```
 # Result
 Save output to file for analysis: `./tape -c config.yaml -n 10000  > log.transactions `
