@@ -40,6 +40,9 @@ sign_cert: ./organizations/peerOrganizations/org1.example.com/users/User1@org1.e
 num_of_conn: 16
 client_per_conn: 16
 
-check_txid: false # if false, must disable txid check in peer and orderer.  
+# if check_txid is false, Fabric must disable txid check in peer and orderer.  
+# It should always be set to true. 
+check_txid: true 
+
 check_rwset: false # if true, output rwset for each transaction
 e2e: false  # end-to-end test

@@ -3,6 +3,7 @@ package infra
 import (
 	"context"
 	"strconv"
+
 	// "time"
 	// "fmt"
 
@@ -10,6 +11,8 @@ import (
 	log "github.com/sirupsen/logrus"
 	"golang.org/x/time/rate"
 )
+
+var global_txid2id map[string]int
 
 func StartCreateProposal(num int, burst int, r float64, config Config, crypto *Crypto, raw chan *Elements, errorCh chan error, logger *log.Logger) {
 	limit := rate.Inf
@@ -41,6 +44,7 @@ func StartCreateProposal(num int, burst int, r float64, config Config, crypto *C
 			errorCh <- errors.Wrapf(err, "error creating proposal")
 			return
 		}
+		global_txid2id[txid] = i
 
 		if err = limiter.Wait(ctx); err != nil {
 			errorCh <- errors.Wrapf(err, "error creating proposal")
@@ -48,7 +52,7 @@ func StartCreateProposal(num int, burst int, r float64, config Config, crypto *C
 		}
 
 		raw <- &Elements{Proposal: prop, Txid: txid}
-		// st := time.Now().UnixNano() 
-	    // fmt.Println("start", st, txid)
+		// st := time.Now().UnixNano()
+		// fmt.Println("start", st, txid)
 	}
 }

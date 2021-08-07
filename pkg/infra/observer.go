@@ -48,7 +48,8 @@ func (o *Observer) Start(N int32, errorCh chan error, finishCh chan struct{}, no
 				n = n + int32(len(fb.FilteredBlock.FilteredTransactions))
 				st := time.Now().UnixNano()
 				for _, tx := range fb.FilteredBlock.FilteredTransactions {
-					buffer_end <- fmt.Sprintf("end: %d %s %s", st, tx.GetTxid(), tx.TxValidationCode)
+					txid := tx.GetTxid()
+					buffer_end <- fmt.Sprintf("end: %d %d_%s %s", st, global_txid2id[txid], txid, tx.TxValidationCode)
 				}
 				if n+(*abort) >= N {
 					close(finishCh)

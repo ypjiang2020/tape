@@ -72,7 +72,7 @@ func (p *Proposer) Start(signed, processed chan *Elements, done <-chan struct{},
 			//send sign proposal to peer for endorsement
 			// todo
 			st := time.Now().UnixNano()
-			buffer_start <- fmt.Sprintf("start: %d %s %d %d", st, s.Txid, ii, jj)
+			buffer_start <- fmt.Sprintf("start: %d %d_%s %d %d", st, global_txid2id[s.Txid], s.Txid, ii, jj)
 			r, err := p.e.ProcessProposal(context.Background(), s.SignedProp)
 			if err != nil || r.Response.Status < 200 || r.Response.Status >= 400 {
 				if r == nil {
@@ -89,7 +89,7 @@ func (p *Proposer) Start(signed, processed chan *Elements, done <-chan struct{},
 				processed <- s
 				// todo
 				st := time.Now().UnixNano()
-				buffer_proposal <- fmt.Sprintf("proposal: %d %s", st, s.Txid)
+				buffer_proposal <- fmt.Sprintf("proposal: %d %d_%s", st, global_txid2id[s.Txid], s.Txid)
 			}
 			s.lock.Unlock()
 		case <-done:
@@ -141,7 +141,7 @@ func (b *Broadcaster) Start(envs <-chan *Elements, errorCh chan error, done <-ch
 		case e := <-envs:
 			// todo
 			st := time.Now().UnixNano()
-			buffer_sent <- fmt.Sprintf("sent: %d %s", st, e.Txid)
+			buffer_sent <- fmt.Sprintf("sent: %d %d_%s", st, global_txid2id[e.Txid], e.Txid)
 			err := b.c.Send(e.Envelope)
 			if err != nil {
 				errorCh <- err
