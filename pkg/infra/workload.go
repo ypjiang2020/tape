@@ -42,17 +42,22 @@ func generate() []string {
 		hot := int(g_hot_rate * float64(len(accounts)))
 		var src int
 		var dst int
-		p := rand.Float64()
-		if p < g_contetion_rate {
-			src = rand.Intn(hot)
+		if g_contetion_rate == 1.0 && g_hot_rate == 1.0 {
+			src = rand.Intn(len(accounts))
+			dst = rand.Intn(len(accounts))
 		} else {
-			src = rand.Intn(len(accounts)-hot) + hot
-		}
-		p = rand.Float64()
-		if p < g_contetion_rate {
-			dst = rand.Intn(hot)
-		} else {
-			dst = rand.Intn(len(accounts)-hot) + hot
+			p := rand.Float64()
+			if p < g_contetion_rate {
+				src = rand.Intn(hot)
+			} else {
+				src = rand.Intn(len(accounts)-hot) + hot
+			}
+			p = rand.Float64()
+			if p < g_contetion_rate {
+				dst = rand.Intn(hot)
+			} else {
+				dst = rand.Intn(len(accounts)-hot) + hot
+			}
 		}
 		// TODO: support other transactions
 		// (e.g., Amalgamate, TransactionsSavings, WriteCheck, DepositChecking)

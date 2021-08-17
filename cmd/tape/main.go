@@ -24,8 +24,8 @@ var (
 	rate            = run.Flag("rate", "[Optional] Creates tx rate, default 0 as unlimited").Default("0").Float64()
 	burst           = run.Flag("burst", "[Optional] Burst size for Tape, should bigger than rate").Default("1000").Int()
 	e2e             = run.Flag("e2e", "end2end").Required().Bool()
-	hot_rate        = run.Flag("hrate", "hot rate").Default("0.1").Float64()
-	contention_rate = run.Flag("crate", "contention rate").Required().Float64()
+	hot_rate        = run.Flag("hrate", "hot rate").Default("1").Float64()
+	contention_rate = run.Flag("crate", "contention rate").Default("1").Float64()
 	version         = app.Command("version", "Show version information")
 )
 
