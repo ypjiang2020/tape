@@ -34,6 +34,16 @@ func generate() []string {
 		transactions_type = "create_accounts"
 	}
 
+	if g_txtype != "null" {
+		if g_txtype == "create" {
+			transactions_type = "create_accounts"
+		} else if g_txtype == "transfer" {
+			transactions_type = "transfer_money"
+		} else if g_txtype == "create_random" {
+			transactions_type = "create_random"
+		}
+	}
+
 	var res []string
 	// fmt.Println(transactions_type)
 
@@ -65,9 +75,16 @@ func generate() []string {
 		res = append(res, accounts[src])
 		res = append(res, accounts[dst])
 		res = append(res, "1")
-	} else {
+	} else if transactions_type == "create_accounts" {
 		idx := getName(64)
 		res = append(res, "CreateAccount")
+		res = append(res, idx)
+		res = append(res, idx)
+		res = append(res, strconv.Itoa(1e9))
+		res = append(res, strconv.Itoa(1e9))
+	} else if transactions_type == "create_random" {
+		idx := getName(64)
+		res = append(res, "CreateAccountRandom")
 		res = append(res, idx)
 		res = append(res, idx)
 		res = append(res, strconv.Itoa(1e9))
