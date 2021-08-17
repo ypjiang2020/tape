@@ -16,8 +16,9 @@
 
     # typically 
     rm ACCOUNTS # clean old accounts
-    ./tape --e2e --hrate 0.1 --crate 0.1 --config config.yaml -n 1000  # create 1000 accounts according config.yaml
-    ./tape --e2e --hrate 0.1 --crate 0.1 --config config.yaml -n 10000  # send 10000 transactions using ACCOUNTS
+    ./tape --e2e --hrate 0.1 --crate 0.1 --txtype create_random --config config.yaml -n 1000  # randomly create 1000 accounts according config.yaml
+    ./tape --e2e --hrate 0.1 --crate 0.1 --txtype create --config config.yaml -n 1000  # create 1000 accounts according config.yaml
+    ./tape --e2e --hrate 0.1 --crate 0.1 --txtype transfer --config config.yaml -n 10000  # send 10000 transactions using ACCOUNTS
     ```
 3. Breakdown      
     ```bash
@@ -29,8 +30,8 @@
 
     # typically 
     rm ENDORSEMENT # clean old endorsements
-    ./tape --no-e2e --hrate 0.1 --crate 0.1 --config config.yaml -n 10000  # create 10000 endorsements
-    ./tape --no-e2e --hrate 0.1 --crate 0.1 --config config.yaml -n 10000  # broadcast 10000 transactions 
+    ./tape --no-e2e --hrate 0.1 --crate 0.1 --txtype create --config config.yaml -n 10000  # create 10000 endorsements
+    ./tape --no-e2e --hrate 0.1 --crate 0.1 --txtype create --config config.yaml -n 10000  # broadcast 10000 transactions 
     ```
 # Result
 Save output to file for analysis: `./tape -c config.yaml -n 10000  > log.transactions `
