@@ -18,13 +18,15 @@ const (
 var (
 	app = kingpin.New("tape", "A performance test tool for Hyperledger Fabric")
 
-	run     = app.Command("run", "Start the tape program").Default()
-	con     = run.Flag("config", "Path to config file").Required().Short('c').String()
-	num     = run.Flag("number", "Number of tx for shot").Required().Short('n').Int()
-	rate    = run.Flag("rate", "[Optional] Creates tx rate, default 0 as unlimited").Default("0").Float64()
-	burst   = run.Flag("burst", "[Optional] Burst size for Tape, should bigger than rate").Default("1000").Int()
-	e2e     = run.Flag("e2e", "end2end").Required().Bool()
-	version = app.Command("version", "Show version information")
+	run             = app.Command("run", "Start the tape program").Default()
+	con             = run.Flag("config", "Path to config file").Required().Short('c').String()
+	num             = run.Flag("number", "Number of tx for shot").Required().Short('n').Int()
+	rate            = run.Flag("rate", "[Optional] Creates tx rate, default 0 as unlimited").Default("0").Float64()
+	burst           = run.Flag("burst", "[Optional] Burst size for Tape, should bigger than rate").Default("1000").Int()
+	e2e             = run.Flag("e2e", "end2end").Required().Bool()
+	hot_rate        = run.Flag("hrate", "hot rate").Default("0.1").Float64()
+	contention_rate = run.Flag("crate", "contention rate").Required().Float64()
+	version         = app.Command("version", "Show version information")
 )
 
 func main() {
@@ -44,7 +46,7 @@ func main() {
 		fmt.Printf(infra.GetVersionInfo())
 	case run.FullCommand():
 		checkArgs(rate, burst, logger)
-		err = infra.Process(*con, *num, *burst, *rate, *e2e, logger)
+		err = infra.Process(*con, *num, *burst, *rate, *e2e, *hot_rate, *contention_rate, logger)
 	default:
 		err = errors.Errorf("invalid command: %s", fullCmd)
 	}

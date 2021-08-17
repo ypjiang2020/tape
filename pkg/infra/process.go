@@ -14,13 +14,15 @@ import (
 var endorsement_file = "ENDORSEMENT"
 
 var (
-	MAX_BUF         = 100010
-	buffer_start    = make(chan string, MAX_BUF) // start: timestamp txid clientid connectionid
-	buffer_proposal = make(chan string, MAX_BUF) // proposal: timestamp txid
-	buffer_sent     = make(chan string, MAX_BUF) // sent: timestamp txid
-	buffer_end      = make(chan string, MAX_BUF) // end: timestamp txid [VALID/MVCC]
-	buffer_tot      = make(chan string, MAX_BUF) // null
-	g_num           int
+	MAX_BUF          = 100010
+	buffer_start     = make(chan string, MAX_BUF) // start: timestamp txid clientid connectionid
+	buffer_proposal  = make(chan string, MAX_BUF) // proposal: timestamp txid
+	buffer_sent      = make(chan string, MAX_BUF) // sent: timestamp txid
+	buffer_end       = make(chan string, MAX_BUF) // end: timestamp txid [VALID/MVCC]
+	buffer_tot       = make(chan string, MAX_BUF) // null
+	g_num            int
+	g_hot_rate       float64
+	g_contetion_rate float64
 )
 
 func print_benchmark() {
@@ -236,7 +238,9 @@ func breakdown_phase2(config Config, num int, burst int, rate float64, logger *l
 
 }
 
-func Process(configPath string, num int, burst int, rate float64, e bool, logger *log.Logger) error {
+func Process(configPath string, num int, burst int, rate float64, e bool, hot_rate, contention_rate float64, logger *log.Logger) error {
+	g_hot_rate = hot_rate
+	g_contetion_rate = contention_rate
 	config, err := LoadConfig(configPath)
 	if err != nil {
 		return err

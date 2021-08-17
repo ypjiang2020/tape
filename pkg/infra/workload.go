@@ -38,8 +38,22 @@ func generate() []string {
 	// fmt.Println(transactions_type)
 
 	if transactions_type == "transfer_money" {
-		src := rand.Intn(len(accounts))
-		dst := rand.Intn(len(accounts)) // maybe same
+		// contended workload
+		hot := int(g_hot_rate * float64(len(accounts)))
+		var src int
+		var dst int
+		p := rand.Float64()
+		if p < g_contetion_rate {
+			src = rand.Intn(hot)
+		} else {
+			src = rand.Intn(len(accounts)-hot) + hot
+		}
+		p = rand.Float64()
+		if p < g_contetion_rate {
+			dst = rand.Intn(hot)
+		} else {
+			dst = rand.Intn(len(accounts)-hot) + hot
+		}
 		// TODO: support other transactions
 		// (e.g., Amalgamate, TransactionsSavings, WriteCheck, DepositChecking)
 		res = append(res, "SendPayment")

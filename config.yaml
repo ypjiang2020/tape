@@ -43,3 +43,5 @@ client_per_conn: 16
 check_txid: false # if false, must disable txid check in peer and orderer.  
 check_rwset: false # if true, output rwset for each transaction
 e2e: false  # end-to-end test
+hot_rate: 0.1
+contention_rate: 0.1
