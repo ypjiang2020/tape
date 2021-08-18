@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
+	"sync/atomic"
 	"time"
 
 	"github.com/hyperledger/fabric-protos-go/common"
@@ -148,8 +149,11 @@ func breakdown_phase1(config Config, num int, burst int, rate float64, logger *l
 			cnt += 1
 			res, err := assember.Assemble(tx)
 			if err != nil {
-				fmt.Println("error: assemble endorsement to envelop")
-				return err
+				atomic.AddInt32(&assember.Abort, 1)
+				if cnt+assember.Abort >= int32(num) {
+					break
+				}
+				continue
 			}
 			bytes, err := json.Marshal(res.Envelope)
 			if err != nil {
@@ -216,7 +220,7 @@ func breakdown_phase2(config Config, num int, burst int, rate float64, logger *l
 	var temp0 int32 = 0
 	go observer.Start(int32(num), errorCh, finishCh, start, &temp0)
 	go func() {
-		for i := 0; i < num; i++ {
+		for i := 0; i < len(TXs); i++ {
 			var item Elements
 			item.Envelope = &TXs[i]
 			envs <- &item

@@ -33,6 +33,12 @@
     ./tape --no-e2e --hrate 0.1 --crate 0.1 --txtype create --config config.yaml -n 10000  # create 10000 endorsements
     ./tape --no-e2e --hrate 0.1 --crate 0.1 --txtype create --config config.yaml -n 10000  # broadcast 10000 transactions 
     ```
+4. Nondeterminism 
+    ```bash 
+    rm ACCOUNTS
+    ./tape --no-e2e --txtype create_random --ndrate 0.5 --config.yaml -n 1000
+
+    ```
 # Result
 Save output to file for analysis: `./tape -c config.yaml -n 10000  > log.transactions `
 
