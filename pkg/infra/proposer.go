@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"sync/atomic"
 	"time"
 
 	"github.com/hyperledger/fabric-protos-go/common"
@@ -20,14 +21,14 @@ type Proposers struct {
 	logger *log.Logger
 }
 
-func CreateProposers(conn, client int, nodes []Node, logger *log.Logger) (*Proposers, error) {
+func CreateProposers(conn, client int, nodes []Node, assember *Assembler, logger *log.Logger) (*Proposers, error) {
 	var ps [][]*Proposer
 	var err error
 	//one proposer per connection per peer
 	for _, node := range nodes {
 		row := make([]*Proposer, conn)
 		for j := 0; j < conn; j++ {
-			row[j], err = CreateProposer(node, logger)
+			row[j], err = CreateProposer(node, assember, logger)
 			if err != nil {
 				return nil, err
 			}
@@ -53,16 +54,17 @@ func (ps *Proposers) Start(signed []chan *Elements, processed chan *Elements, do
 type Proposer struct {
 	e      peer.EndorserClient
 	Addr   string
+	assm   *Assembler
 	logger *log.Logger
 }
 
-func CreateProposer(node Node, logger *log.Logger) (*Proposer, error) {
+func CreateProposer(node Node, assember *Assembler, logger *log.Logger) (*Proposer, error) {
 	endorser, err := CreateEndorserClient(node, logger)
 	if err != nil {
 		return nil, err
 	}
 
-	return &Proposer{e: endorser, Addr: node.Addr, logger: logger}, nil
+	return &Proposer{e: endorser, Addr: node.Addr, assm: assember, logger: logger}, nil
 }
 
 func (p *Proposer) Start(signed, processed chan *Elements, done <-chan struct{}, threshold int, ii int, jj int) {
@@ -86,10 +88,18 @@ func (p *Proposer) Start(signed, processed chan *Elements, done <-chan struct{},
 			//collect for endorsement
 			s.Responses = append(s.Responses, r)
 			if len(s.Responses) >= threshold {
-				processed <- s
+				// processed <- s
 				// todo
 				st := time.Now().UnixNano()
 				buffer_proposal <- fmt.Sprintf("proposal: %d %s", st, s.Txid)
+				env, err := CreateSignedTx(s.Proposal, p.assm.Signer, s.Responses, p.assm.Conf.Check_rwset)
+				if err != nil {
+					atomic.AddInt32(&p.assm.Abort, 1)
+				}
+				s.Envelope = env
+				processed <- s
+				// st = time.Now().UnixNano()
+				// buffer_sent <- fmt.Sprintf("sent: %d %s", st, s.Txid)
 			}
 			s.lock.Unlock()
 		case <-done:

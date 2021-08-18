@@ -1,20 +1,19 @@
 package infra
 
 import (
-	"fmt"
 	"bytes"
 	"crypto/rand"
+	"fmt"
 	"math"
 
 	"github.com/golang/protobuf/proto"
 	"github.com/hyperledger/fabric-protos-go/common"
 	"github.com/hyperledger/fabric-protos-go/orderer"
 	"github.com/hyperledger/fabric-protos-go/peer"
-	"github.com/hyperledger/fabric/protoutil"
 	"github.com/hyperledger/fabric/core/ledger/kvledger/txmgmt/rwsetutil"
+	"github.com/hyperledger/fabric/protoutil"
 	"github.com/pkg/errors"
 )
-
 
 func getRandomNonce() ([]byte, error) {
 	key := make([]byte, 24)
@@ -97,19 +96,19 @@ func CreateSignedTx(proposal *peer.Proposal, signer *Crypto, resps []*peer.Propo
 
 	// check that the signer is the same that is referenced in the header
 	// TODO: maybe worth removing?
-	signerBytes, err := signer.Serialize()
-	if err != nil {
-		return nil, err
-	}
+	// signerBytes, err := signer.Serialize()
+	// if err != nil {
+	// 	return nil, err
+	// }
 
-	shdr, err := GetSignatureHeader(hdr.SignatureHeader)
-	if err != nil {
-		return nil, err
-	}
+	// shdr, err := GetSignatureHeader(hdr.SignatureHeader)
+	// if err != nil {
+	// 	return nil, err
+	// }
 
-	if bytes.Compare(signerBytes, shdr.Creator) != 0 {
-		return nil, errors.Errorf("signer must be the same as the one referenced in the header")
-	}
+	// 	if bytes.Compare(signerBytes, shdr.Creator) != 0 {
+	// 		return nil, errors.Errorf("signer must be the same as the one referenced in the header")
+	// 	}
 
 	// get header extensions so we have the visibility field
 	_, err = GetChaincodeHeaderExtension(hdr)
@@ -128,10 +127,14 @@ func CreateSignedTx(proposal *peer.Proposal, signer *Crypto, resps []*peer.Propo
 				return nil, errors.Errorf("proposal response was not successful, error code %d, msg %s", r.Response.Status, r.Response.Message)
 			}
 		}
-		if bytes.Compare(a1, r.Payload) != 0 {
-			return nil, errors.Errorf("ProposalResponsePayloads from Peers do not match")
+		if g_ndrate < 1e-6 {
+			endorsements = append(endorsements, r.Endorsement)
+		} else {
+			if bytes.Compare(a1, r.Payload) != 0 {
+				return nil, errors.Errorf("ProposalResponsePayloads from Peers do not match")
+			}
+			endorsements = append(endorsements, r.Endorsement)
 		}
-		endorsements = append(endorsements, r.Endorsement)
 	}
 	if check_rwset {
 		// dd: open rwset to do some check
@@ -144,7 +147,7 @@ func CreateSignedTx(proposal *peer.Proposal, signer *Crypto, resps []*peer.Propo
 			return nil, err
 		}
 		var txRWSet *rwsetutil.TxRwSet
-		txRWSet = &rwsetutil.TxRwSet{} 
+		txRWSet = &rwsetutil.TxRwSet{}
 		if err = txRWSet.FromProtoBytes(respPayload.Results); err != nil {
 			return nil, err
 		}

@@ -67,17 +67,16 @@ func e2e(config Config, num int, burst int, rate float64, logger *log.Logger) er
 	}
 
 	for i := 0; i < config.Threads; i++ {
-		go assember.StartSigner(raw, signed, errorCh, done)
 		go assember.StartIntegrator(processed, envs, errorCh, done)
 	}
 
-	proposor, err := CreateProposers(config.NumOfConn, config.ClientPerConn, config.Endorsers, logger)
+	proposor, err := CreateProposers(config.NumOfConn, config.ClientPerConn, config.Endorsers, assember, logger)
 	if err != nil {
 		return err
 	}
-	proposor.Start(signed, processed, done, config)
+	proposor.Start(signed, envs, done, config)
 
-	broadcaster, err := CreateBroadcasters(config.NumOfConn, config.Orderer, logger)
+	broadcaster, err := CreateBroadcasters(config.OrdererClient, config.Orderer, logger)
 	if err != nil {
 		return err
 	}
@@ -87,9 +86,14 @@ func e2e(config Config, num int, burst int, rate float64, logger *log.Logger) er
 	if err != nil {
 		return err
 	}
+	go StartCreateProposal(num, burst, rate, config, crypto, raw, errorCh, logger)
+
+	time.Sleep(time.Duration(10) * time.Second)
 	start := time.Now()
 	go observer.Start(int32(num), errorCh, finishCh, start, &assember.Abort)
-	go StartCreateProposal(num, burst, rate, config, crypto, raw, errorCh, logger)
+	for i := 0; i < config.Threads; i++ {
+		go assember.StartSigner(raw, signed, errorCh, done)
+	}
 
 	for {
 		select {
@@ -129,7 +133,7 @@ func breakdown_phase1(config Config, num int, burst int, rate float64, logger *l
 		go assember.StartSigner(raw, signed, errorCh, done)
 	}
 
-	proposor, err := CreateProposers(config.NumOfConn, config.ClientPerConn, config.Endorsers, logger)
+	proposor, err := CreateProposers(config.NumOfConn, config.ClientPerConn, config.Endorsers, assember, logger)
 	if err != nil {
 		return err
 	}
@@ -195,7 +199,7 @@ func breakdown_phase2(config Config, num int, burst int, rate float64, logger *l
 	finishCh := make(chan struct{})
 	errorCh := make(chan error, burst)
 
-	broadcaster, err := CreateBroadcasters(config.NumOfConn, config.Orderer, logger)
+	broadcaster, err := CreateBroadcasters(config.OrdererClient, config.Orderer, logger)
 	if err != nil {
 		return err
 	}
