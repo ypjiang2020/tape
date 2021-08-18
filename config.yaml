@@ -39,6 +39,7 @@ private_key: ./organizations/peerOrganizations/org1.example.com/users/User1@org1
 sign_cert: ./organizations/peerOrganizations/org1.example.com/users/User1@org1.example.com/msp/signcerts/User1@org1.example.com-cert.pem
 num_of_conn: 16
 client_per_conn: 16
+threads: 10
 
 check_txid: false # if false, must disable txid check in peer and orderer.  
 check_rwset: false # if true, output rwset for each transaction

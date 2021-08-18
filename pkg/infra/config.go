@@ -28,6 +28,7 @@ type Config struct {
 	End2end         bool     `yaml:"e2e"`
 	Hot_rate        float64  `yaml:"hot_rate"`
 	Contention_rate float64  `yaml:"contention_rate"`
+	Threads         int      `yaml:"threads"`
 }
 
 type Node struct {

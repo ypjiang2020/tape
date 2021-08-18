@@ -66,7 +66,7 @@ func e2e(config Config, num int, burst int, rate float64, logger *log.Logger) er
 		signed[i] = make(chan *Elements, burst)
 	}
 
-	for i := 0; i < 10; i++ {
+	for i := 0; i < config.Threads; i++ {
 		go assember.StartSigner(raw, signed, errorCh, done)
 		go assember.StartIntegrator(processed, envs, errorCh, done)
 	}
@@ -146,7 +146,6 @@ func breakdown_phase1(config Config, num int, burst int, rate float64, logger *l
 		case err = <-errorCh:
 			return err
 		case tx := <-processed:
-			cnt += 1
 			res, err := assember.Assemble(tx)
 			if err != nil {
 				atomic.AddInt32(&assember.Abort, 1)
@@ -160,6 +159,7 @@ func breakdown_phase1(config Config, num int, burst int, rate float64, logger *l
 				fmt.Println("error: marshal envelop")
 				return err
 			}
+			cnt += 1
 			buffer = append(buffer, bytes)
 			if cnt+assember.Abort >= int32(num) {
 				break
