@@ -27,6 +27,7 @@ var (
 	hot_rate        = run.Flag("hrate", "hot rate").Default("1").Float64()
 	txtype          = run.Flag("txtype", "transaction type [create, create_random, transfer, null]").Default("null").String()
 	contention_rate = run.Flag("crate", "contention rate").Default("1").Float64()
+	nd_rate         = run.Flag("ndrate", "nondeterminism rate").Default("0").Float64()
 	version         = app.Command("version", "Show version information")
 )
 
@@ -47,7 +48,7 @@ func main() {
 		fmt.Printf(infra.GetVersionInfo())
 	case run.FullCommand():
 		checkArgs(rate, burst, logger)
-		err = infra.Process(*con, *num, *burst, *rate, *e2e, *hot_rate, *contention_rate, *txtype, logger)
+		err = infra.Process(*con, *num, *burst, *rate, *e2e, *hot_rate, *contention_rate, *nd_rate, *txtype, logger)
 	default:
 		err = errors.Errorf("invalid command: %s", fullCmd)
 	}

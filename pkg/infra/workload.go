@@ -3,6 +3,7 @@ package infra
 import (
 	"bufio"
 	"fmt"
+	"math"
 	"math/rand"
 	"os"
 	"strconv"
@@ -52,7 +53,7 @@ func generate() []string {
 		hot := int(g_hot_rate * float64(len(accounts)))
 		var src int
 		var dst int
-		if g_contetion_rate == 1.0 && g_hot_rate == 1.0 {
+		if math.Abs(g_contetion_rate-1.0) < 1e-6 && math.Abs(g_hot_rate-1.0) < 1e-6 {
 			src = rand.Intn(len(accounts))
 			dst = rand.Intn(len(accounts))
 		} else {
@@ -84,7 +85,11 @@ func generate() []string {
 		res = append(res, strconv.Itoa(1e9))
 	} else if transactions_type == "create_random" {
 		idx := getName(64)
-		res = append(res, "CreateAccountRandom")
+		if rand.Float64() < g_ndrate {
+			res = append(res, "CreateAccountRandom")
+		} else {
+			res = append(res, "CreateAccount")
+		}
 		res = append(res, idx)
 		res = append(res, idx)
 		res = append(res, strconv.Itoa(1e9))
