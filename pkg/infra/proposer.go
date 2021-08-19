@@ -97,6 +97,7 @@ func (p *Proposer) Start(signed, processed chan *Elements, done <-chan struct{},
 				env, err := CreateSignedTx(s.Proposal, p.assm.Signer, s.Responses, p.assm.Conf.Check_rwset)
 				if err != nil {
 					atomic.AddInt32(&p.assm.Abort, 1)
+					continue
 				}
 				s.Envelope = env
 				processed <- s
