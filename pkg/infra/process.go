@@ -28,6 +28,7 @@ var (
 	g_ndrate          float64
 	g_num_of_conn     int
 	g_client_per_conn int
+	g_groups          int
 )
 
 func print_benchmark() {
@@ -62,7 +63,7 @@ func e2e(config Config, num int, burst int, rate float64, logger *log.Logger) er
 	done := make(chan struct{})
 	finishCh := make(chan struct{})
 	errorCh := make(chan error, burst)
-	assember := &Assembler{Signer: crypto, EndorserGroups: config.EndorserGroups, Conf: config}
+	assember := &Assembler{Signer: crypto, EndorserGroups: g_groups, Conf: config}
 
 	for i := 0; i < len(config.Endorsers); i++ {
 		signed[i] = make(chan *Elements, burst)
@@ -250,13 +251,14 @@ func breakdown_phase2(config Config, num int, burst int, rate float64, logger *l
 
 }
 
-func Process(configPath string, num int, burst int, rate float64, e bool, hot_rate, contention_rate, nd_rate float64, txtype string, num_of_conn, client_per_conn int, logger *log.Logger) error {
+func Process(configPath string, num int, burst int, rate float64, e bool, hot_rate, contention_rate, nd_rate float64, txtype string, num_of_conn, client_per_conn int, groups int, logger *log.Logger) error {
 	g_hot_rate = hot_rate
 	g_contetion_rate = contention_rate
 	g_txtype = txtype
 	g_ndrate = nd_rate
 	g_num_of_conn = num_of_conn
 	g_client_per_conn = client_per_conn
+	g_groups = groups
 	config, err := LoadConfig(configPath)
 	if err != nil {
 		return err

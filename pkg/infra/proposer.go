@@ -47,7 +47,7 @@ func (ps *Proposers) Start(signed []chan *Elements, processed chan *Elements, do
 			for j := 0; j < g_num_of_conn; j++ {
 				tempk := k
 				tempj := j
-				go ps.workers[i][j].Start(signed[i], processed, done, int(len(config.Endorsers)/config.EndorserGroups), tempk, tempj)
+				go ps.workers[i][j].Start(signed[i], processed, done, int(len(config.Endorsers)/g_groups), tempk, tempj)
 			}
 		}
 	}
