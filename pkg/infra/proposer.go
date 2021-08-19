@@ -43,8 +43,8 @@ func (ps *Proposers) Start(signed []chan *Elements, processed chan *Elements, do
 	ps.logger.Infof("Start sending transactions.")
 	for i := 0; i < len(config.Endorsers); i++ {
 		// peer connection should be config.ClientPerConn * config.NumOfConn
-		for k := 0; k < config.ClientPerConn; k++ {
-			for j := 0; j < config.NumOfConn; j++ {
+		for k := 0; k < g_client_per_conn; k++ {
+			for j := 0; j < g_num_of_conn; j++ {
 				tempk := k
 				tempj := j
 				go ps.workers[i][j].Start(signed[i], processed, done, int(len(config.Endorsers)/config.EndorserGroups), tempk, tempj)
