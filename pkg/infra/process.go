@@ -15,17 +15,19 @@ import (
 var endorsement_file = "ENDORSEMENT"
 
 var (
-	MAX_BUF          = 100010
-	buffer_start     = make(chan string, MAX_BUF) // start: timestamp txid clientid connectionid
-	buffer_proposal  = make(chan string, MAX_BUF) // proposal: timestamp txid
-	buffer_sent      = make(chan string, MAX_BUF) // sent: timestamp txid
-	buffer_end       = make(chan string, MAX_BUF) // end: timestamp txid [VALID/MVCC]
-	buffer_tot       = make(chan string, MAX_BUF) // null
-	g_num            int
-	g_hot_rate       float64
-	g_contetion_rate float64
-	g_txtype         string
-	g_ndrate         float64
+	MAX_BUF           = 100010
+	buffer_start      = make(chan string, MAX_BUF) // start: timestamp txid clientid connectionid
+	buffer_proposal   = make(chan string, MAX_BUF) // proposal: timestamp txid
+	buffer_sent       = make(chan string, MAX_BUF) // sent: timestamp txid
+	buffer_end        = make(chan string, MAX_BUF) // end: timestamp txid [VALID/MVCC]
+	buffer_tot        = make(chan string, MAX_BUF) // null
+	g_num             int
+	g_hot_rate        float64
+	g_contetion_rate  float64
+	g_txtype          string
+	g_ndrate          float64
+	g_num_of_conn     int
+	g_client_per_conn int
 )
 
 func print_benchmark() {
@@ -70,7 +72,7 @@ func e2e(config Config, num int, burst int, rate float64, logger *log.Logger) er
 		go assember.StartIntegrator(processed, envs, errorCh, done)
 	}
 
-	proposor, err := CreateProposers(config.NumOfConn, config.ClientPerConn, config.Endorsers, assember, logger)
+	proposor, err := CreateProposers(g_num_of_conn, g_client_per_conn, config.Endorsers, assember, logger)
 	if err != nil {
 		return err
 	}
@@ -133,7 +135,7 @@ func breakdown_phase1(config Config, num int, burst int, rate float64, logger *l
 		go assember.StartSigner(raw, signed, errorCh, done)
 	}
 
-	proposor, err := CreateProposers(config.NumOfConn, config.ClientPerConn, config.Endorsers, assember, logger)
+	proposor, err := CreateProposers(g_num_of_conn, g_client_per_conn, config.Endorsers, assember, logger)
 	if err != nil {
 		return err
 	}
@@ -248,11 +250,13 @@ func breakdown_phase2(config Config, num int, burst int, rate float64, logger *l
 
 }
 
-func Process(configPath string, num int, burst int, rate float64, e bool, hot_rate, contention_rate, nd_rate float64, txtype string, logger *log.Logger) error {
+func Process(configPath string, num int, burst int, rate float64, e bool, hot_rate, contention_rate, nd_rate float64, txtype string, num_of_conn, client_per_conn int, logger *log.Logger) error {
 	g_hot_rate = hot_rate
 	g_contetion_rate = contention_rate
 	g_txtype = txtype
 	g_ndrate = nd_rate
+	g_num_of_conn = num_of_conn
+	g_client_per_conn = client_per_conn
 	config, err := LoadConfig(configPath)
 	if err != nil {
 		return err
