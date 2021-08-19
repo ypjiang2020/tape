@@ -126,7 +126,7 @@ func breakdown_phase1(config Config, num int, burst int, rate float64, logger *l
 	processed := make(chan *Elements, burst)
 	done := make(chan struct{})
 	errorCh := make(chan error, burst)
-	assember := &Assembler{Signer: crypto, EndorserGroups: config.EndorserGroups, Conf: config}
+	assember := &Assembler{Signer: crypto, EndorserGroups: g_groups, Conf: config}
 
 	for i := 0; i < len(config.Endorsers); i++ {
 		signed[i] = make(chan *Elements, burst)
