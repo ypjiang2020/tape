@@ -60,13 +60,9 @@ func generate() []string {
 			p := rand.Float64()
 			if p < g_contetion_rate {
 				src = rand.Intn(hot)
-			} else {
-				src = rand.Intn(len(accounts)-hot) + hot
-			}
-			p = rand.Float64()
-			if p < g_contetion_rate {
 				dst = rand.Intn(hot)
 			} else {
+				src = rand.Intn(len(accounts)-hot) + hot
 				dst = rand.Intn(len(accounts)-hot) + hot
 			}
 		}
