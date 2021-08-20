@@ -31,7 +31,7 @@ var (
 	num_of_conn     = run.Flag("num_of_conn", "num of conn").Default("16").Int()
 	client_per_conn = run.Flag("client_per_conn", "client per conn").Default("16").Int()
 	groups          = run.Flag("groups", "endorser groups").Default("10").Int()
-	orderer_client  = run.Flag("groups", "orderer client").Default("20").Int()
+	orderer_client  = run.Flag("orderer_client", "orderer client").Default("20").Int()
 	version         = app.Command("version", "Show version information")
 )
 
