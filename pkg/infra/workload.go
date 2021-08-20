@@ -56,22 +56,28 @@ func generate() []string {
 		if math.Abs(g_contetion_rate-1.0) < 1e-6 && math.Abs(g_hot_rate-1.0) < 1e-6 {
 			src = rand.Intn(len(accounts))
 			dst = rand.Intn(len(accounts))
+			res = append(res, "SendPayment")
+			res = append(res, accounts[src])
+			res = append(res, accounts[dst])
+			res = append(res, "1")
 		} else {
 			p := rand.Float64()
 			if p < g_contetion_rate {
 				src = rand.Intn(hot)
 				dst = rand.Intn(hot)
+				res = append(res, "SendPayment")
+				res = append(res, accounts[src])
+				res = append(res, accounts[dst])
+				res = append(res, "1")
 			} else {
-				src = rand.Intn(len(accounts)-hot) + hot
-				dst = rand.Intn(len(accounts)-hot) + hot
+				idx := getName(64)
+				res = append(res, "CreateAccount")
+				res = append(res, idx)
+				res = append(res, idx)
+				res = append(res, strconv.Itoa(1e9))
+				res = append(res, strconv.Itoa(1e9))
 			}
 		}
-		// TODO: support other transactions
-		// (e.g., Amalgamate, TransactionsSavings, WriteCheck, DepositChecking)
-		res = append(res, "SendPayment")
-		res = append(res, accounts[src])
-		res = append(res, accounts[dst])
-		res = append(res, "1")
 	} else if transactions_type == "create_accounts" {
 		idx := getName(64)
 		res = append(res, "CreateAccount")
