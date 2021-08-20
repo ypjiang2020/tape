@@ -31,6 +31,7 @@ var (
 	num_of_conn     = run.Flag("num_of_conn", "num of conn").Default("16").Int()
 	client_per_conn = run.Flag("client_per_conn", "client per conn").Default("16").Int()
 	groups          = run.Flag("groups", "endorser groups").Default("10").Int()
+	orderer_client  = run.Flag("groups", "orderer client").Default("20").Int()
 	version         = app.Command("version", "Show version information")
 )
 
@@ -51,7 +52,7 @@ func main() {
 		fmt.Printf(infra.GetVersionInfo())
 	case run.FullCommand():
 		checkArgs(rate, burst, logger)
-		err = infra.Process(*con, *num, *burst, *rate, *e2e, *hot_rate, *contention_rate, *nd_rate, *txtype, *num_of_conn, *client_per_conn, *groups, logger)
+		err = infra.Process(*con, *num, *burst, *rate, *e2e, *hot_rate, *contention_rate, *nd_rate, *txtype, *num_of_conn, *client_per_conn, *groups, *orderer_client, logger)
 	default:
 		err = errors.Errorf("invalid command: %s", fullCmd)
 	}

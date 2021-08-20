@@ -29,6 +29,7 @@ var (
 	g_num_of_conn     int
 	g_client_per_conn int
 	g_groups          int
+	g_orderer_client  int
 )
 
 func print_benchmark() {
@@ -79,7 +80,7 @@ func e2e(config Config, num int, burst int, rate float64, logger *log.Logger) er
 	}
 	proposor.Start(signed, envs, done, config)
 
-	broadcaster, err := CreateBroadcasters(config.OrdererClient, config.Orderer, logger)
+	broadcaster, err := CreateBroadcasters(g_orderer_client, config.Orderer, logger)
 	if err != nil {
 		return err
 	}
@@ -202,7 +203,7 @@ func breakdown_phase2(config Config, num int, burst int, rate float64, logger *l
 	finishCh := make(chan struct{})
 	errorCh := make(chan error, burst)
 
-	broadcaster, err := CreateBroadcasters(config.OrdererClient, config.Orderer, logger)
+	broadcaster, err := CreateBroadcasters(g_orderer_client, config.Orderer, logger)
 	if err != nil {
 		return err
 	}
@@ -251,7 +252,7 @@ func breakdown_phase2(config Config, num int, burst int, rate float64, logger *l
 
 }
 
-func Process(configPath string, num int, burst int, rate float64, e bool, hot_rate, contention_rate, nd_rate float64, txtype string, num_of_conn, client_per_conn int, groups int, logger *log.Logger) error {
+func Process(configPath string, num int, burst int, rate float64, e bool, hot_rate, contention_rate, nd_rate float64, txtype string, num_of_conn, client_per_conn int, groups int, orderer_client int, logger *log.Logger) error {
 	g_hot_rate = hot_rate
 	g_contetion_rate = contention_rate
 	g_txtype = txtype
@@ -259,6 +260,7 @@ func Process(configPath string, num int, burst int, rate float64, e bool, hot_ra
 	g_num_of_conn = num_of_conn
 	g_client_per_conn = client_per_conn
 	g_groups = groups
+	g_orderer_client = orderer_client
 	config, err := LoadConfig(configPath)
 	if err != nil {
 		return err
