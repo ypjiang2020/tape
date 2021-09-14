@@ -13,6 +13,7 @@ import (
 )
 
 var endorsement_file = "ENDORSEMENT"
+var global_txid2id map[string]int
 
 var (
 	MAX_BUF         = 100010
@@ -213,6 +214,7 @@ func breakdown_phase2(config Config, logger *log.Logger) error {
 	done := make(chan struct{})
 	finishCh := make(chan struct{})
 	errorCh := make(chan error, config.Burst)
+	go print_benchmark(config.Logdir, done)
 
 	broadcaster, err := CreateBroadcasters(config.OrdererClients, config.Orderer, config.Burst, logger)
 	if err != nil {
@@ -247,6 +249,8 @@ func breakdown_phase2(config Config, logger *log.Logger) error {
 		for i := 0; i < config.NumOfTransactions; i++ {
 			var item Elements
 			item.Envelope = &TXs[i]
+			item.Txid = txids[i]
+			global_txid2id[item.Txid] = i
 			envs <- &item
 		}
 	}()
@@ -268,6 +272,7 @@ func breakdown_phase2(config Config, logger *log.Logger) error {
 }
 
 func Process(config Config, logger *log.Logger) error {
+	global_txid2id = make(map[string]int)
 	if config.End2end {
 		fmt.Println("e2e")
 		return e2e(config, logger)

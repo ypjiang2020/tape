@@ -44,6 +44,7 @@ func loadConfig() infra.Config {
 	if err != nil {
 		log.Fatalf("load config error: %v\n", err)
 	}
+	config.Seed = *seed
 	config.Rate = *rate
 	config.Burst = *burst
 	config.End2end = *e2e

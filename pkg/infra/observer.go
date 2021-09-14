@@ -65,7 +65,7 @@ func (o *Observer) Start(N int32, errorCh chan error, finishCh chan struct{}, no
 			}
 		}
 	}()
-	for n+(*abort) < N {
+	for {
 		r, err := o.d.Recv()
 		if err != nil {
 			errorCh <- err

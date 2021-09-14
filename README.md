@@ -8,29 +8,17 @@
 1. Link to crypto materials: `ln -sf $YOUR_PROJECT/organizations`
 2. End-to-End Run     
     ```bash
-    # if(ACCOUNTS not exists):
-    #   create ACCOUNTS  
-    # else:
-    #   send transactions (i.e. transfer money from A to B) 
-    # end
-
-    # typically 
-    rm ACCOUNTS # clean old accounts
-    ./tape --e2e --config config.yaml -n 1000  # create 1000 accounts according config.yaml
-    ./tape --e2e --config config.yaml -n 10000  # send 10000 transactions using ACCOUNTS
+    # create 2000 accounts
+    ./tape -c config.yaml --txtype put --endorser_group 1 --number 2000 --seed 2333 --rate 1000 --burst 50000 --orderer_client 5 --num_of_conn 4 --client_per_conn 4 
+    # start 2000 payment transactions
+    ./tape -c config.yaml --txtype conflict --endorser_group 1 --number 2000 --seed 2333 --rate 1000 --burst 50000 --orderer_client 5 --num_of_conn 4 --client_per_conn 4 
     ```
 3. Breakdown      
     ```bash
-    # if(EDNORSEMENT not exists):
-    #   start phase1 to create ENDORSEMENT: send proposals to endorsers
-    # else:
-    #   start phase2 to broadcast transactions to orderer (read from ENDORSEMENT)
-    # end
-
-    # typically 
-    rm ENDORSEMENT # clean old endorsements
-    ./tape --no-e2e --config config.yaml -n 10000  # create 10000 endorsements
-    ./tape --no-e2e --config config.yaml -n 10000  # broadcast 10000 transactions 
+    # phase1
+    ./tape --no-e2e -c config.yaml --txtype put --endorser_group 1 --number 2000 --seed 2333 --rate 1000 --burst 50000 --orderer_client 5 --num_of_conn 4 --client_per_conn 4 
+    # phase2
+    ./tape --no-e2e -c config.yaml --txtype put --endorser_group 1 --number 2000 --seed 2333 --rate 1000 --burst 50000 --orderer_client 5 --num_of_conn 4 --client_per_conn 4 
     ```
 # Result
 Save output to file for analysis: `./tape -c config.yaml -n 10000  > log.transactions `

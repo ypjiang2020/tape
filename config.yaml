@@ -47,7 +47,7 @@ num_of_transactions: 50000
 time_of_transactions: 120 #TODO
 tx_type: put
 
-logdir: temp.log
+logdir: log.transactions
 
 # if check_txid is false, Fabric must disable txid check in peer and orderer.  
 # It should always be set to true. 
