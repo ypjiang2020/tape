@@ -10,22 +10,36 @@ import (
 )
 
 type Config struct {
-	Endorsers      []Node   `yaml:"endorsers"`
-	Committer      Node     `yaml:"committer"`
-	Orderer        Node     `yaml:"orderer"`
-	Channel        string   `yaml:"channel"`
-	Chaincode      string   `yaml:"chaincode"`
-	Version        string   `yaml:"version"`
-	Args           []string `yaml:"args"`
-	MSPID          string   `yaml:"mspid"`
-	PrivateKey     string   `yaml:"private_key"`
-	SignCert       string   `yaml:"sign_cert"`
-	NumOfConn      int      `yaml:"num_of_conn"`
-	ClientPerConn  int      `yaml:"client_per_conn"`
-	EndorserGroups int      `yaml:"endorser_groups"`
-	Check_Txid     bool     `yaml:"check_txid"`
-	Check_rwset    bool     `yaml:"check_rwset"`
-	End2end        bool     `yaml:"e2e"`
+	Endorsers  []Node   `yaml:"endorsers"`
+	Committer  Node     `yaml:"committer"`
+	Orderer    Node     `yaml:"orderer"`
+	Channel    string   `yaml:"channel"`
+	Chaincode  string   `yaml:"chaincode"`
+	Version    string   `yaml:"version"`
+	Args       []string `yaml:"args"`
+	MSPID      string   `yaml:"mspid"`
+	PrivateKey string   `yaml:"private_key"`
+	SignCert   string   `yaml:"sign_cert"`
+
+	NumOfConn      int `yaml:"num_of_conn"`
+	ClientPerConn  int `yaml:"client_per_conn"`
+	Threads        int `yaml:"threads"`
+	OrdererClients int `yaml:"orderer_clients"`
+	EndorserGroups int `yaml:"endorser_groups"`
+
+	Check_Txid  bool `yaml:"check_txid"`
+	Check_rwset bool `yaml:"check_rwset"`
+	End2end     bool `yaml:"e2e"`
+
+	NumOfTransactions  int    `yaml:"num_of_transactions"`
+	TimeOfTransactions int    `yaml:"time_of_transactions"`
+	TxType             string `yaml:"tx_type"`
+
+	Rate  float64 `yaml:"rate"`
+	Burst int     `yaml:"burst"`
+
+	Logdir string `yaml:"logdir"`
+	Seed   int    `yaml:"seed"`
 }
 
 type Node struct {

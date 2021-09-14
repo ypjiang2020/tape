@@ -18,14 +18,45 @@ const (
 var (
 	app = kingpin.New("tape", "A performance test tool for Hyperledger Fabric")
 
-	run     = app.Command("run", "Start the tape program").Default()
-	con     = run.Flag("config", "Path to config file").Required().Short('c').String()
-	num     = run.Flag("number", "Number of tx for shot").Required().Short('n').Int()
-	rate    = run.Flag("rate", "[Optional] Creates tx rate, default 0 as unlimited").Default("0").Float64()
-	burst   = run.Flag("burst", "[Optional] Burst size for Tape, should bigger than rate").Default("1000").Int()
-	e2e     = run.Flag("e2e", "end2end").Required().Bool()
+	run = app.Command("run", "Start the tape program").Default()
+	con = run.Flag("config", "Path to config file").Required().Short('c').String()
+
+	rate  = run.Flag("rate", "[Optional] Creates tx rate, default 0 as unlimited").Default("0").Float64()
+	burst = run.Flag("burst", "[Optional] Burst size for Tape, should bigger than rate").Default("1000").Int()
+	e2e   = run.Flag("e2e", "end to end").Default("true").Bool()
+
+	num_of_conn     = run.Flag("num_of_conn", "number of connections").Default("16").Int()
+	client_per_conn = run.Flag("client_per_conn", "clients per connection").Default("16").Int()
+	orderer_client  = run.Flag("orderer_client", "orderer clients").Default("20").Int()
+	threads         = run.Flag("thread", "signature thread").Default("20").Int()
+	endorser_groups = run.Flag("endorser_group", "endorser groups").Required().Int()
+
+	num_of_transactions  = run.Flag("number", "Number of tx for shot").Default("500000").Short('n').Int()
+	time_of_transactions = run.Flag("time", "time of tx for shot (default 120s)").Default("120").Short('t').Int()
+	tx_type              = run.Flag("txtype", "transaction type [put, conflict]").Required().String()
+
 	version = app.Command("version", "Show version information")
 )
+
+func loadConfig() infra.Config {
+	config, err := infra.LoadConfig(*con)
+	if err != nil {
+		log.Fatalf("load config error: %v\n", err)
+	}
+	config.Rate = *rate
+	config.Burst = *burst
+	config.End2end = *e2e
+	config.ClientPerConn = *client_per_conn
+	config.NumOfConn = *num_of_conn
+	config.OrdererClients = *orderer_client
+	config.Threads = *threads
+	config.EndorserGroups = *endorser_groups
+	config.NumOfTransactions = *num_of_transactions
+	config.TimeOfTransactions = *time_of_transactions
+	config.TxType = *tx_type
+
+	return config
+}
 
 func main() {
 	var err error
@@ -44,7 +75,8 @@ func main() {
 		fmt.Printf(infra.GetVersionInfo())
 	case run.FullCommand():
 		checkArgs(rate, burst, logger)
-		err = infra.Process(*con, *num, *burst, *rate, *e2e, logger)
+		config := loadConfig()
+		err = infra.Process(config, logger)
 	default:
 		err = errors.Errorf("invalid command: %s", fullCmd)
 	}
