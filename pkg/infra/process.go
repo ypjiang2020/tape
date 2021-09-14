@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
+	"sync"
 	"time"
 
 	"github.com/hyperledger/fabric-protos-go/common"
@@ -20,9 +21,12 @@ var (
 	buffer_sent     = make(chan string, MAX_BUF) // sent: timestamp txid
 	buffer_end      = make(chan string, MAX_BUF) // end: timestamp txid [VALID/MVCC]
 	buffer_tot      = make(chan string, MAX_BUF) // null
+	g_wg            = sync.WaitGroup{}
 )
 
 func print_benchmark(logdir string, done <-chan struct{}) {
+	g_wg.Add(1)
+	defer g_wg.Done()
 	f, err := os.Create(logdir)
 	if err != nil {
 		log.Fatalf("open log %s failed: %v\n", logdir, err)
@@ -38,9 +42,22 @@ func print_benchmark(logdir string, done <-chan struct{}) {
 			f.WriteString(res + "\n")
 		case res := <-buffer_end:
 			f.WriteString(res + "\n")
-		case res := <-buffer_tot:
-			f.WriteString(res + "\n")
 		case <-done:
+			for len(buffer_start) > 0 {
+				f.WriteString(<-buffer_start + "\n")
+			}
+			for len(buffer_proposal) > 0 {
+				f.WriteString(<-buffer_proposal + "\n")
+			}
+			for len(buffer_sent) > 0 {
+				f.WriteString(<-buffer_sent + "\n")
+			}
+			for len(buffer_end) > 0 {
+				f.WriteString(<-buffer_end + "\n")
+			}
+			for len(buffer_tot) > 0 {
+				f.WriteString(<-buffer_tot + "\n")
+			}
 			return
 		}
 	}
@@ -73,13 +90,11 @@ func e2e(config Config, logger *log.Logger) error {
 	if err != nil {
 		return err
 	}
-	proposor.Start(signed, processed, done, config)
 
 	broadcaster, err := CreateBroadcasters(config.OrdererClients, config.Orderer, config.Burst, logger)
 	if err != nil {
 		return err
 	}
-	broadcaster.Start(envs, config.Rate, errorCh, done)
 
 	observer, err := CreateObserver(config.Channel, config.Committer, crypto, logger)
 	if err != nil {
@@ -91,6 +106,8 @@ func e2e(config Config, logger *log.Logger) error {
 	for i := 0; i < config.Threads; i++ {
 		go assember.StartSigner(raw, signed, errorCh, done)
 	}
+	proposor.Start(signed, processed, done, config)
+	broadcaster.Start(envs, config.Rate, errorCh, done)
 	go observer.Start(int32(config.NumOfTransactions), errorCh, finishCh, start, &assember.Abort)
 
 	for {
@@ -99,10 +116,11 @@ func e2e(config Config, logger *log.Logger) error {
 			return err
 		case <-finishCh:
 			duration := time.Since(start)
-			close(done)
 			logger.Infof("Completed processing transactions.")
-			fmt.Printf("tx: %d, duration: %+v, tps: %f\n", config.NumOfTransactions, duration, float64(config.NumOfTransactions)/duration.Seconds())
-			fmt.Printf("abort rate because of the different ledger height: %d %.2f%%\n", assember.Abort, float64(assember.Abort)/float64(config.NumOfTransactions)*100)
+			buffer_tot <- fmt.Sprintf("tx: %d, duration: %+v, tps: %f", config.NumOfTransactions, duration, float64(config.NumOfTransactions)/duration.Seconds())
+			buffer_tot <- fmt.Sprintf("abort rate because of the different ledger height: %d %.2f%%", assember.Abort, float64(assember.Abort)/float64(config.NumOfTransactions)*100)
+			close(done)
+			g_wg.Wait()
 			return nil
 		}
 	}
@@ -129,7 +147,6 @@ func breakdown_phase1(config Config, logger *log.Logger) error {
 	if err != nil {
 		return err
 	}
-	proposor.Start(signed, processed, done, config)
 
 	go StartCreateProposal(config, crypto, raw, errorCh, logger)
 	time.Sleep(10 * time.Second)
@@ -138,6 +155,7 @@ func breakdown_phase1(config Config, logger *log.Logger) error {
 	for i := 0; i < config.Threads; i++ {
 		go assember.StartSigner(raw, signed, errorCh, done)
 	}
+	proposor.Start(signed, processed, done, config)
 
 	// phase1: send proposals to endorsers
 	var cnt int32 = 0
@@ -167,11 +185,12 @@ func breakdown_phase1(config Config, logger *log.Logger) error {
 		}
 	}
 	duration := time.Since(start)
-	close(done)
 
 	logger.Infof("Completed endorsing transactions.")
-	fmt.Printf("tx: %d, duration: %+v, tps: %f\n", config.NumOfTransactions, duration, float64(config.NumOfTransactions)/duration.Seconds())
-	fmt.Printf("abort rate because of the different ledger height: %d %.2f%%\n", assember.Abort, float64(assember.Abort)/float64(config.NumOfTransactions)*100)
+	buffer_tot <- fmt.Sprintf("tx: %d, duration: %+v, tps: %f", config.NumOfTransactions, duration, float64(config.NumOfTransactions)/duration.Seconds())
+	buffer_tot <- fmt.Sprintf("abort rate because of the different ledger height: %d %.2f%%", assember.Abort, float64(assember.Abort)/float64(config.NumOfTransactions)*100)
+	close(done)
+	g_wg.Wait()
 	// persistency
 	mfile, _ := os.Create(endorsement_file)
 	defer mfile.Close()
@@ -199,7 +218,6 @@ func breakdown_phase2(config Config, logger *log.Logger) error {
 	if err != nil {
 		return err
 	}
-	broadcaster.Start(envs, config.Rate, errorCh, done)
 
 	observer, err := CreateObserver(config.Channel, config.Committer, crypto, logger)
 	if err != nil {
@@ -222,6 +240,7 @@ func breakdown_phase2(config Config, logger *log.Logger) error {
 		i++
 	}
 	start := time.Now()
+	broadcaster.Start(envs, config.Rate, errorCh, done)
 	var temp0 int32 = 0
 	go observer.Start(int32(config.NumOfTransactions), errorCh, finishCh, start, &temp0)
 	go func() {
@@ -238,9 +257,10 @@ func breakdown_phase2(config Config, logger *log.Logger) error {
 			return err
 		case <-finishCh:
 			duration := time.Since(start)
-			close(done)
 			logger.Infof("Completed processing transactions.")
-			fmt.Printf("tx: %d, duration: %+v, tps: %f\n", config.NumOfTransactions, duration, float64(config.NumOfTransactions)/duration.Seconds())
+			buffer_tot <- fmt.Sprintf("tx: %d, duration: %+v, tps: %f", config.NumOfTransactions, duration, float64(config.NumOfTransactions)/duration.Seconds())
+			close(done)
+			g_wg.Wait()
 			return nil
 		}
 	}

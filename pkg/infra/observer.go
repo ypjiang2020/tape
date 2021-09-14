@@ -78,5 +78,4 @@ func (o *Observer) Start(N int32, errorCh chan error, finishCh chan struct{}, no
 		fb := r.Type.(*peer.DeliverResponse_FilteredBlock)
 		tempchann <- fb
 	}
-	close(finishCh)
 }

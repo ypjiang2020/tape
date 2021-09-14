@@ -10,6 +10,7 @@ import (
 var global_txid2id map[string]int
 
 func StartCreateProposal(config Config, crypto *Crypto, raw chan *Elements, errorCh chan error, logger *log.Logger) {
+	global_txid2id = make(map[string]int)
 	wg := newWorkloadGenerator(config)
 	chaincodeCtorJSONs := wg.GenerateWorkload()
 	for i := 0; i < config.NumOfTransactions; i++ {

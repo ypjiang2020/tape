@@ -21,6 +21,7 @@ var (
 	run = app.Command("run", "Start the tape program").Default()
 	con = run.Flag("config", "Path to config file").Required().Short('c').String()
 
+	seed  = run.Flag("seed", "seed").Default("0").Int()
 	rate  = run.Flag("rate", "[Optional] Creates tx rate, default 0 as unlimited").Default("0").Float64()
 	burst = run.Flag("burst", "[Optional] Burst size for Tape, should bigger than rate").Default("1000").Int()
 	e2e   = run.Flag("e2e", "end to end").Default("true").Bool()
@@ -31,7 +32,7 @@ var (
 	threads         = run.Flag("thread", "signature thread").Default("20").Int()
 	endorser_groups = run.Flag("endorser_group", "endorser groups").Required().Int()
 
-	num_of_transactions  = run.Flag("number", "Number of tx for shot").Default("500000").Short('n').Int()
+	num_of_transactions  = run.Flag("number", "Number of tx for shot").Default("50000").Short('n').Int()
 	time_of_transactions = run.Flag("time", "time of tx for shot (default 120s)").Default("120").Short('t').Int()
 	tx_type              = run.Flag("txtype", "transaction type [put, conflict]").Required().String()
 
