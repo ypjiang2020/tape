@@ -101,7 +101,7 @@ func e2e(config Config, logger *log.Logger) error {
 	if err != nil {
 		return err
 	}
-	go StartCreateProposal(config, crypto, raw, errorCh, logger)
+	StartCreateProposal(config, crypto, raw, errorCh, logger)
 	time.Sleep(10 * time.Second)
 	start := time.Now()
 	for i := 0; i < config.Threads; i++ {
@@ -149,7 +149,7 @@ func breakdown_phase1(config Config, logger *log.Logger) error {
 		return err
 	}
 
-	go StartCreateProposal(config, crypto, raw, errorCh, logger)
+	StartCreateProposal(config, crypto, raw, errorCh, logger)
 	time.Sleep(10 * time.Second)
 	start := time.Now()
 
@@ -244,17 +244,21 @@ func breakdown_phase2(config Config, logger *log.Logger) error {
 	start := time.Now()
 	broadcaster.Start(envs, config.Rate, errorCh, done)
 	var temp0 int32 = 0
-	go observer.Start(int32(config.NumOfTransactions), errorCh, finishCh, start, &temp0)
+	go observer.Start(int32(len(txids)), errorCh, finishCh, start, &temp0)
+	items := make([]Elements, config.NumOfTransactions)
+	for i := 0; i < len(txids); i++ {
+		var item Elements
+		item.Envelope = &TXs[i]
+		item.Txid = txids[i]
+		global_txid2id[item.Txid] = i
+		items[i] = item
+	}
+
 	go func() {
-		for i := 0; i < config.NumOfTransactions; i++ {
-			var item Elements
-			item.Envelope = &TXs[i]
-			item.Txid = txids[i]
-			global_txid2id[item.Txid] = i
-			envs <- &item
+		for i := 0; i < len(items); i++ {
+			envs <- &items[i]
 		}
 	}()
-
 	for {
 		select {
 		case err = <-errorCh:

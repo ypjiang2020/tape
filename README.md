@@ -15,6 +15,7 @@
     ```
 3. Breakdown      
     ```bash
+    rm ENDORSEMENT
     # phase1
     ./tape --no-e2e -c config.yaml --txtype put --endorser_group 1 --number 2000 --seed 2333 --rate 1000 --burst 50000 --orderer_client 5 --num_of_conn 4 --client_per_conn 4 
     # phase2

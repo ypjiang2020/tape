@@ -115,7 +115,7 @@ func (p *Proposer) Start(signed, processed chan *Elements, done <-chan struct{},
 			return
 		}
 		if cnt >= 10 {
-			tps := cnt * 1e9 / int(st - base)
+			tps := cnt * 1e9 / int(st-base)
 			log.Println("endorser send rate", tps, "expect", expect)
 			base = st
 			cnt = 0
@@ -186,8 +186,6 @@ func (b *Broadcaster) Start(envs <-chan *Elements, rate float64, errorCh chan er
 		select {
 		case e := <-envs:
 			// todo
-			b.getToken()
-			st = time.Now().UnixNano()
 			buffer_sent <- fmt.Sprintf("sent: %d %d_%s", st, global_txid2id[e.Txid], e.Txid)
 			err := b.c.Send(e.Envelope)
 			if err != nil {
