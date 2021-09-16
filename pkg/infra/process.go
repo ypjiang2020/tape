@@ -241,10 +241,6 @@ func breakdown_phase2(config Config, logger *log.Logger) error {
 		}
 		i++
 	}
-	start := time.Now()
-	broadcaster.Start(envs, config.Rate, errorCh, done)
-	var temp0 int32 = 0
-	go observer.Start(int32(len(txids)), errorCh, finishCh, start, &temp0)
 	items := make([]Elements, config.NumOfTransactions)
 	for i := 0; i < len(txids); i++ {
 		var item Elements
@@ -254,11 +250,15 @@ func breakdown_phase2(config Config, logger *log.Logger) error {
 		items[i] = item
 	}
 
+	start := time.Now()
 	go func() {
 		for i := 0; i < len(items); i++ {
 			envs <- &items[i]
 		}
 	}()
+	broadcaster.Start(envs, config.Rate, errorCh, done)
+	var temp0 int32 = 0
+	go observer.Start(int32(len(txids)), errorCh, finishCh, start, &temp0)
 	for {
 		select {
 		case err = <-errorCh:

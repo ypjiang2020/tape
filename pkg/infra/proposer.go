@@ -186,6 +186,8 @@ func (b *Broadcaster) Start(envs <-chan *Elements, rate float64, errorCh chan er
 		select {
 		case e := <-envs:
 			// todo
+			b.getToken()
+			st = time.Now().UnixNano()
 			buffer_sent <- fmt.Sprintf("sent: %d %d_%s", st, global_txid2id[e.Txid], e.Txid)
 			err := b.c.Send(e.Envelope)
 			if err != nil {
