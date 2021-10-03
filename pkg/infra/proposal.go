@@ -1,20 +1,19 @@
 package infra
 
 import (
-	"fmt"
 	"bytes"
 	"crypto/rand"
+	"fmt"
 	"math"
 
+	"github.com/Yunpeng-J/fabric-protos-go/common"
+	"github.com/Yunpeng-J/fabric-protos-go/orderer"
+	"github.com/Yunpeng-J/fabric-protos-go/peer"
 	"github.com/golang/protobuf/proto"
-	"github.com/hyperledger/fabric-protos-go/common"
-	"github.com/hyperledger/fabric-protos-go/orderer"
-	"github.com/hyperledger/fabric-protos-go/peer"
-	"github.com/hyperledger/fabric/protoutil"
-	"github.com/hyperledger/fabric/core/ledger/kvledger/txmgmt/rwsetutil"
+	"github.com/Yunpeng-J/HLF-2.2/core/ledger/kvledger/txmgmt/rwsetutil"
+	"github.com/Yunpeng-J/HLF-2.2/protoutil"
 	"github.com/pkg/errors"
 )
-
 
 func getRandomNonce() ([]byte, error) {
 	key := make([]byte, 24)
@@ -144,7 +143,7 @@ func CreateSignedTx(proposal *peer.Proposal, signer *Crypto, resps []*peer.Propo
 			return nil, err
 		}
 		var txRWSet *rwsetutil.TxRwSet
-		txRWSet = &rwsetutil.TxRwSet{} 
+		txRWSet = &rwsetutil.TxRwSet{}
 		if err = txRWSet.FromProtoBytes(respPayload.Results); err != nil {
 			return nil, err
 		}

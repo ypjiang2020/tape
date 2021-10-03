@@ -44,7 +44,10 @@ func (wg *WorkloadGenerator) generate() []string {
 
 	if wg.config.TxType == "conflict" {
 		src := rand.Intn(len(wg.accounts))
-		dst := rand.Intn(len(wg.accounts)) // maybe same
+		dst := rand.Intn(len(wg.accounts))
+		for src == dst {
+			dst = rand.Intn(len(wg.accounts))
+		}
 		// TODO: support other transactions
 		// (e.g., Amalgamate, TransactionsSavings, WriteCheck, DepositChecking)
 		res = append(res, "SendPayment")

@@ -5,8 +5,8 @@ import (
 	"os"
 	"time"
 
-	"tape/e2e"
-	"tape/pkg/infra"
+	"github.com/Yunpeng-J/tape/e2e"
+	"github.com/Yunpeng-J/tape/pkg/infra"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"

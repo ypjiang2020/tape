@@ -3,8 +3,8 @@ package infra
 import (
 	"io/ioutil"
 
+	"github.com/Yunpeng-J/fabric-protos-go/msp"
 	"github.com/gogo/protobuf/proto"
-	"github.com/hyperledger/fabric-protos-go/msp"
 	"github.com/pkg/errors"
 	"gopkg.in/yaml.v2"
 )

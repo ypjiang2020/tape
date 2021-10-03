@@ -8,7 +8,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/hyperledger/fabric-protos-go/common"
+	"github.com/Yunpeng-J/fabric-protos-go/common"
 	log "github.com/sirupsen/logrus"
 )
 

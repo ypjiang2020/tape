@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/hyperledger/fabric-protos-go/peer"
+	"github.com/Yunpeng-J/fabric-protos-go/peer"
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
 )
@@ -75,7 +75,13 @@ func (o *Observer) Start(N int32, errorCh chan error, finishCh chan struct{}, no
 			errorCh <- errors.Errorf("received nil message, but expect a valid block instead. You could look into your peer logs for more info")
 			return
 		}
-		fb := r.Type.(*peer.DeliverResponse_FilteredBlock)
-		tempchann <- fb
+		switch t := r.Type.(type) {
+		case *peer.DeliverResponse_FilteredBlock:
+			tempchann <- t
+		case *peer.DeliverResponse_Status:
+			log.Println("status:", t.Status)
+		default:
+			log.Println("please check the return type manually")
+		}
 	}
 }

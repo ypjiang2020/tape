@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"os"
 
-	"tape/pkg/infra"
+	"github.com/Yunpeng-J/tape/pkg/infra"
 
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"

@@ -3,8 +3,8 @@ package mock
 import (
 	"net"
 
-	"github.com/hyperledger/fabric-protos-go/orderer"
-	"github.com/hyperledger/fabric-protos-go/peer"
+	"github.com/Yunpeng-J/fabric-protos-go/orderer"
+	"github.com/Yunpeng-J/fabric-protos-go/peer"
 	"google.golang.org/grpc"
 )
 

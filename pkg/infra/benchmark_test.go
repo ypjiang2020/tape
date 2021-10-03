@@ -4,9 +4,9 @@ import (
 	"net"
 	"testing"
 
-	"tape/e2e/mock"
+	"github.com/Yunpeng-J/tape/e2e/mock"
 
-	"github.com/hyperledger/fabric-protos-go/peer"
+	"github.com/Yunpeng-J/fabric-protos-go/peer"
 	log "github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
 )
