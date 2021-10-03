@@ -20,12 +20,12 @@ orderer1: &orderer1
   tls_ca_cert: ./organizations/ordererOrganizations/example.com/msp/tlscacerts/tlsca.example.com-cert.pem
 
 # Nodes to interact with
-endorser_groups: 4
+endorser_groups: 1
 endorsers:
   - *peer1
-  - *peer2
-  - *peer3
-  - *peer4
+  # - *peer2
+  # - *peer3
+  # - *peer4
 # we might support multi-committer in the future for more complex test scenario,
 # i.e. consider tx committed only if it's done on >50% of nodes. But for now,
 # it seems sufficient to support single committer.
@@ -54,7 +54,7 @@ logdir: log.transactions
 
 # if check_txid is false, Fabric must disable txid check in peer and orderer.  
 # It should always be set to true. 
-check_txid: true 
-check_rwset: false # if true, output rwset for each transaction
+check_txid: false 
+check_rwset: true # if true, output rwset for each transaction
 e2e: false  # end-to-end test
 seed: 2 # if seed equals to 0, set seed to the current time.
