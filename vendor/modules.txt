@@ -1,0 +1,665 @@
+# github.com/Azure/go-ansiterm v0.0.0-20170929234023-d6e3b3328b78
+github.com/Azure/go-ansiterm
+github.com/Azure/go-ansiterm/winterm
+# github.com/BurntSushi/toml v0.3.1
+github.com/BurntSushi/toml
+# github.com/DataDog/zstd v1.4.0
+github.com/DataDog/zstd
+# github.com/Knetic/govaluate v3.0.0+incompatible
+github.com/Knetic/govaluate
+# github.com/Microsoft/go-winio v0.4.12
+github.com/Microsoft/go-winio
+# github.com/Microsoft/hcsshim v0.8.6
+github.com/Microsoft/hcsshim/osversion
+# github.com/Shopify/sarama v1.20.1
+github.com/Shopify/sarama
+# github.com/VictoriaMetrics/fastcache v1.5.7
+github.com/VictoriaMetrics/fastcache
+# github.com/Yunpeng-J/HLF-2.2 v1.5.6
+## explicit
+github.com/Yunpeng-J/HLF-2.2/bccsp
+github.com/Yunpeng-J/HLF-2.2/bccsp/factory
+github.com/Yunpeng-J/HLF-2.2/bccsp/idemix
+github.com/Yunpeng-J/HLF-2.2/bccsp/idemix/bridge
+github.com/Yunpeng-J/HLF-2.2/bccsp/idemix/handlers
+github.com/Yunpeng-J/HLF-2.2/bccsp/pkcs11
+github.com/Yunpeng-J/HLF-2.2/bccsp/signer
+github.com/Yunpeng-J/HLF-2.2/bccsp/sw
+github.com/Yunpeng-J/HLF-2.2/bccsp/utils
+github.com/Yunpeng-J/HLF-2.2/common/capabilities
+github.com/Yunpeng-J/HLF-2.2/common/cauthdsl
+github.com/Yunpeng-J/HLF-2.2/common/chaincode
+github.com/Yunpeng-J/HLF-2.2/common/channelconfig
+github.com/Yunpeng-J/HLF-2.2/common/config
+github.com/Yunpeng-J/HLF-2.2/common/configtx
+github.com/Yunpeng-J/HLF-2.2/common/configtx/test
+github.com/Yunpeng-J/HLF-2.2/common/crypto
+github.com/Yunpeng-J/HLF-2.2/common/crypto/tlsgen
+github.com/Yunpeng-J/HLF-2.2/common/deliver
+github.com/Yunpeng-J/HLF-2.2/common/diag
+github.com/Yunpeng-J/HLF-2.2/common/errors
+github.com/Yunpeng-J/HLF-2.2/common/flogging
+github.com/Yunpeng-J/HLF-2.2/common/flogging/fabenc
+github.com/Yunpeng-J/HLF-2.2/common/flogging/floggingtest
+github.com/Yunpeng-J/HLF-2.2/common/flogging/httpadmin
+github.com/Yunpeng-J/HLF-2.2/common/flogging/metrics
+github.com/Yunpeng-J/HLF-2.2/common/genesis
+github.com/Yunpeng-J/HLF-2.2/common/graph
+github.com/Yunpeng-J/HLF-2.2/common/grpclogging
+github.com/Yunpeng-J/HLF-2.2/common/grpcmetrics
+github.com/Yunpeng-J/HLF-2.2/common/ledger
+github.com/Yunpeng-J/HLF-2.2/common/ledger/blkstorage
+github.com/Yunpeng-J/HLF-2.2/common/ledger/blockledger
+github.com/Yunpeng-J/HLF-2.2/common/ledger/blockledger/fileledger
+github.com/Yunpeng-J/HLF-2.2/common/ledger/dataformat
+github.com/Yunpeng-J/HLF-2.2/common/ledger/snapshot
+github.com/Yunpeng-J/HLF-2.2/common/ledger/util
+github.com/Yunpeng-J/HLF-2.2/common/ledger/util/leveldbhelper
+github.com/Yunpeng-J/HLF-2.2/common/metadata
+github.com/Yunpeng-J/HLF-2.2/common/metrics
+github.com/Yunpeng-J/HLF-2.2/common/metrics/disabled
+github.com/Yunpeng-J/HLF-2.2/common/metrics/internal/namer
+github.com/Yunpeng-J/HLF-2.2/common/metrics/metricsfakes
+github.com/Yunpeng-J/HLF-2.2/common/metrics/prometheus
+github.com/Yunpeng-J/HLF-2.2/common/metrics/statsd
+github.com/Yunpeng-J/HLF-2.2/common/metrics/statsd/goruntime
+github.com/Yunpeng-J/HLF-2.2/common/policies
+github.com/Yunpeng-J/HLF-2.2/common/policies/inquire
+github.com/Yunpeng-J/HLF-2.2/common/policydsl
+github.com/Yunpeng-J/HLF-2.2/common/semaphore
+github.com/Yunpeng-J/HLF-2.2/common/util
+github.com/Yunpeng-J/HLF-2.2/common/viperutil
+github.com/Yunpeng-J/HLF-2.2/core/aclmgmt
+github.com/Yunpeng-J/HLF-2.2/core/aclmgmt/resources
+github.com/Yunpeng-J/HLF-2.2/core/cclifecycle
+github.com/Yunpeng-J/HLF-2.2/core/chaincode
+github.com/Yunpeng-J/HLF-2.2/core/chaincode/accesscontrol
+github.com/Yunpeng-J/HLF-2.2/core/chaincode/extcc
+github.com/Yunpeng-J/HLF-2.2/core/chaincode/lifecycle
+github.com/Yunpeng-J/HLF-2.2/core/chaincode/persistence
+github.com/Yunpeng-J/HLF-2.2/core/chaincode/platforms
+github.com/Yunpeng-J/HLF-2.2/core/chaincode/platforms/golang
+github.com/Yunpeng-J/HLF-2.2/core/chaincode/platforms/java
+github.com/Yunpeng-J/HLF-2.2/core/chaincode/platforms/node
+github.com/Yunpeng-J/HLF-2.2/core/chaincode/platforms/util
+github.com/Yunpeng-J/HLF-2.2/core/committer
+github.com/Yunpeng-J/HLF-2.2/core/committer/txvalidator
+github.com/Yunpeng-J/HLF-2.2/core/committer/txvalidator/plugin
+github.com/Yunpeng-J/HLF-2.2/core/committer/txvalidator/v14
+github.com/Yunpeng-J/HLF-2.2/core/committer/txvalidator/v20
+github.com/Yunpeng-J/HLF-2.2/core/committer/txvalidator/v20/plugindispatcher
+github.com/Yunpeng-J/HLF-2.2/core/committer/txvalidator/v20/valinforetriever
+github.com/Yunpeng-J/HLF-2.2/core/common/ccpackage
+github.com/Yunpeng-J/HLF-2.2/core/common/ccprovider
+github.com/Yunpeng-J/HLF-2.2/core/common/privdata
+github.com/Yunpeng-J/HLF-2.2/core/common/sysccprovider
+github.com/Yunpeng-J/HLF-2.2/core/common/validation
+github.com/Yunpeng-J/HLF-2.2/core/common/validation/statebased
+github.com/Yunpeng-J/HLF-2.2/core/config
+github.com/Yunpeng-J/HLF-2.2/core/config/configtest
+github.com/Yunpeng-J/HLF-2.2/core/container
+github.com/Yunpeng-J/HLF-2.2/core/container/ccintf
+github.com/Yunpeng-J/HLF-2.2/core/container/dockercontroller
+github.com/Yunpeng-J/HLF-2.2/core/container/externalbuilder
+github.com/Yunpeng-J/HLF-2.2/core/deliverservice
+github.com/Yunpeng-J/HLF-2.2/core/dispatcher
+github.com/Yunpeng-J/HLF-2.2/core/endorser
+github.com/Yunpeng-J/HLF-2.2/core/handlers/auth
+github.com/Yunpeng-J/HLF-2.2/core/handlers/auth/filter
+github.com/Yunpeng-J/HLF-2.2/core/handlers/decoration
+github.com/Yunpeng-J/HLF-2.2/core/handlers/decoration/decorator
+github.com/Yunpeng-J/HLF-2.2/core/handlers/endorsement/api
+github.com/Yunpeng-J/HLF-2.2/core/handlers/endorsement/api/identities
+github.com/Yunpeng-J/HLF-2.2/core/handlers/endorsement/api/state
+github.com/Yunpeng-J/HLF-2.2/core/handlers/endorsement/builtin
+github.com/Yunpeng-J/HLF-2.2/core/handlers/library
+github.com/Yunpeng-J/HLF-2.2/core/handlers/validation/api
+github.com/Yunpeng-J/HLF-2.2/core/handlers/validation/api/capabilities
+github.com/Yunpeng-J/HLF-2.2/core/handlers/validation/api/identities
+github.com/Yunpeng-J/HLF-2.2/core/handlers/validation/api/policies
+github.com/Yunpeng-J/HLF-2.2/core/handlers/validation/api/state
+github.com/Yunpeng-J/HLF-2.2/core/handlers/validation/builtin
+github.com/Yunpeng-J/HLF-2.2/core/handlers/validation/builtin/v12
+github.com/Yunpeng-J/HLF-2.2/core/handlers/validation/builtin/v13
+github.com/Yunpeng-J/HLF-2.2/core/handlers/validation/builtin/v20
+github.com/Yunpeng-J/HLF-2.2/core/ledger
+github.com/Yunpeng-J/HLF-2.2/core/ledger/cceventmgmt
+github.com/Yunpeng-J/HLF-2.2/core/ledger/confighistory
+github.com/Yunpeng-J/HLF-2.2/core/ledger/internal/version
+github.com/Yunpeng-J/HLF-2.2/core/ledger/kvledger
+github.com/Yunpeng-J/HLF-2.2/core/ledger/kvledger/bookkeeping
+github.com/Yunpeng-J/HLF-2.2/core/ledger/kvledger/history
+github.com/Yunpeng-J/HLF-2.2/core/ledger/kvledger/msgs
+github.com/Yunpeng-J/HLF-2.2/core/ledger/kvledger/txmgmt/privacyenabledstate
+github.com/Yunpeng-J/HLF-2.2/core/ledger/kvledger/txmgmt/privacyenabledstate/mock
+github.com/Yunpeng-J/HLF-2.2/core/ledger/kvledger/txmgmt/pvtstatepurgemgmt
+github.com/Yunpeng-J/HLF-2.2/core/ledger/kvledger/txmgmt/queryutil
+github.com/Yunpeng-J/HLF-2.2/core/ledger/kvledger/txmgmt/rwsetutil
+github.com/Yunpeng-J/HLF-2.2/core/ledger/kvledger/txmgmt/statedb
+github.com/Yunpeng-J/HLF-2.2/core/ledger/kvledger/txmgmt/statedb/statecouchdb
+github.com/Yunpeng-J/HLF-2.2/core/ledger/kvledger/txmgmt/statedb/stateleveldb
+github.com/Yunpeng-J/HLF-2.2/core/ledger/kvledger/txmgmt/statemetadata
+github.com/Yunpeng-J/HLF-2.2/core/ledger/kvledger/txmgmt/txmgr
+github.com/Yunpeng-J/HLF-2.2/core/ledger/kvledger/txmgmt/validation
+github.com/Yunpeng-J/HLF-2.2/core/ledger/ledgermgmt
+github.com/Yunpeng-J/HLF-2.2/core/ledger/mock
+github.com/Yunpeng-J/HLF-2.2/core/ledger/pvtdatapolicy
+github.com/Yunpeng-J/HLF-2.2/core/ledger/pvtdatastorage
+github.com/Yunpeng-J/HLF-2.2/core/ledger/util
+github.com/Yunpeng-J/HLF-2.2/core/middleware
+github.com/Yunpeng-J/HLF-2.2/core/operations
+github.com/Yunpeng-J/HLF-2.2/core/peer
+github.com/Yunpeng-J/HLF-2.2/core/policy
+github.com/Yunpeng-J/HLF-2.2/core/scc
+github.com/Yunpeng-J/HLF-2.2/core/scc/cscc
+github.com/Yunpeng-J/HLF-2.2/core/scc/lscc
+github.com/Yunpeng-J/HLF-2.2/core/scc/qscc
+github.com/Yunpeng-J/HLF-2.2/core/testutil
+github.com/Yunpeng-J/HLF-2.2/core/transientstore
+github.com/Yunpeng-J/HLF-2.2/discovery
+github.com/Yunpeng-J/HLF-2.2/discovery/endorsement
+github.com/Yunpeng-J/HLF-2.2/discovery/protoext
+github.com/Yunpeng-J/HLF-2.2/discovery/support
+github.com/Yunpeng-J/HLF-2.2/discovery/support/acl
+github.com/Yunpeng-J/HLF-2.2/discovery/support/chaincode
+github.com/Yunpeng-J/HLF-2.2/discovery/support/config
+github.com/Yunpeng-J/HLF-2.2/discovery/support/gossip
+github.com/Yunpeng-J/HLF-2.2/gossip/api
+github.com/Yunpeng-J/HLF-2.2/gossip/comm
+github.com/Yunpeng-J/HLF-2.2/gossip/common
+github.com/Yunpeng-J/HLF-2.2/gossip/discovery
+github.com/Yunpeng-J/HLF-2.2/gossip/election
+github.com/Yunpeng-J/HLF-2.2/gossip/filter
+github.com/Yunpeng-J/HLF-2.2/gossip/gossip
+github.com/Yunpeng-J/HLF-2.2/gossip/gossip/algo
+github.com/Yunpeng-J/HLF-2.2/gossip/gossip/channel
+github.com/Yunpeng-J/HLF-2.2/gossip/gossip/msgstore
+github.com/Yunpeng-J/HLF-2.2/gossip/gossip/pull
+github.com/Yunpeng-J/HLF-2.2/gossip/identity
+github.com/Yunpeng-J/HLF-2.2/gossip/metrics
+github.com/Yunpeng-J/HLF-2.2/gossip/privdata
+github.com/Yunpeng-J/HLF-2.2/gossip/privdata/common
+github.com/Yunpeng-J/HLF-2.2/gossip/protoext
+github.com/Yunpeng-J/HLF-2.2/gossip/service
+github.com/Yunpeng-J/HLF-2.2/gossip/state
+github.com/Yunpeng-J/HLF-2.2/gossip/util
+github.com/Yunpeng-J/HLF-2.2/idemix
+github.com/Yunpeng-J/HLF-2.2/integration/helpers
+github.com/Yunpeng-J/HLF-2.2/integration/runner
+github.com/Yunpeng-J/HLF-2.2/internal/ccmetadata
+github.com/Yunpeng-J/HLF-2.2/internal/configtxgen/encoder
+github.com/Yunpeng-J/HLF-2.2/internal/configtxgen/encoder/fakes
+github.com/Yunpeng-J/HLF-2.2/internal/configtxgen/genesisconfig
+github.com/Yunpeng-J/HLF-2.2/internal/configtxgen/metadata
+github.com/Yunpeng-J/HLF-2.2/internal/configtxlator/metadata
+github.com/Yunpeng-J/HLF-2.2/internal/configtxlator/update
+github.com/Yunpeng-J/HLF-2.2/internal/cryptogen/ca
+github.com/Yunpeng-J/HLF-2.2/internal/cryptogen/csp
+github.com/Yunpeng-J/HLF-2.2/internal/cryptogen/metadata
+github.com/Yunpeng-J/HLF-2.2/internal/cryptogen/msp
+github.com/Yunpeng-J/HLF-2.2/internal/fileutil
+github.com/Yunpeng-J/HLF-2.2/internal/peer/chaincode
+github.com/Yunpeng-J/HLF-2.2/internal/peer/chaincode/mock
+github.com/Yunpeng-J/HLF-2.2/internal/peer/common
+github.com/Yunpeng-J/HLF-2.2/internal/peer/common/mock
+github.com/Yunpeng-J/HLF-2.2/internal/peer/gossip
+github.com/Yunpeng-J/HLF-2.2/internal/peer/gossip/mocks
+github.com/Yunpeng-J/HLF-2.2/internal/peer/lifecycle/chaincode
+github.com/Yunpeng-J/HLF-2.2/internal/peer/lifecycle/chaincode/mock
+github.com/Yunpeng-J/HLF-2.2/internal/peer/node/mock
+github.com/Yunpeng-J/HLF-2.2/internal/peer/packaging
+github.com/Yunpeng-J/HLF-2.2/internal/peer/packaging/mock
+github.com/Yunpeng-J/HLF-2.2/internal/peer/version
+github.com/Yunpeng-J/HLF-2.2/internal/pkg/comm
+github.com/Yunpeng-J/HLF-2.2/internal/pkg/comm/testpb
+github.com/Yunpeng-J/HLF-2.2/internal/pkg/identity
+github.com/Yunpeng-J/HLF-2.2/internal/pkg/peer/blocksprovider
+github.com/Yunpeng-J/HLF-2.2/internal/pkg/peer/blocksprovider/fake
+github.com/Yunpeng-J/HLF-2.2/internal/pkg/peer/orderers
+github.com/Yunpeng-J/HLF-2.2/internal/pkg/txflags
+github.com/Yunpeng-J/HLF-2.2/msp
+github.com/Yunpeng-J/HLF-2.2/msp/cache
+github.com/Yunpeng-J/HLF-2.2/msp/mgmt
+github.com/Yunpeng-J/HLF-2.2/msp/mgmt/testtools
+github.com/Yunpeng-J/HLF-2.2/protoutil
+# github.com/Yunpeng-J/fabric-chaincode-go v0.0.0-20210607094423-1c77abb20acc
+## explicit
+github.com/Yunpeng-J/fabric-chaincode-go/shim
+github.com/Yunpeng-J/fabric-chaincode-go/shim/internal
+# github.com/Yunpeng-J/fabric-config v0.0.0-20210607091326-a85e56a3ec3c
+## explicit
+github.com/Yunpeng-J/fabric-config/protolator
+github.com/Yunpeng-J/fabric-config/protolator/protoext
+github.com/Yunpeng-J/fabric-config/protolator/protoext/commonext
+github.com/Yunpeng-J/fabric-config/protolator/protoext/ledger/rwsetext
+github.com/Yunpeng-J/fabric-config/protolator/protoext/mspext
+github.com/Yunpeng-J/fabric-config/protolator/protoext/ordererext
+github.com/Yunpeng-J/fabric-config/protolator/protoext/peerext
+# github.com/Yunpeng-J/fabric-protos-go v0.0.0-20210928071911-ec2b84cdd1d8
+## explicit
+github.com/Yunpeng-J/fabric-protos-go/common
+github.com/Yunpeng-J/fabric-protos-go/discovery
+github.com/Yunpeng-J/fabric-protos-go/gossip
+github.com/Yunpeng-J/fabric-protos-go/ledger/queryresult
+github.com/Yunpeng-J/fabric-protos-go/ledger/rwset
+github.com/Yunpeng-J/fabric-protos-go/ledger/rwset/kvrwset
+github.com/Yunpeng-J/fabric-protos-go/msp
+github.com/Yunpeng-J/fabric-protos-go/orderer
+github.com/Yunpeng-J/fabric-protos-go/orderer/etcdraft
+github.com/Yunpeng-J/fabric-protos-go/peer
+github.com/Yunpeng-J/fabric-protos-go/peer/lifecycle
+github.com/Yunpeng-J/fabric-protos-go/transientstore
+# github.com/alecthomas/template v0.0.0-20160405071501-a0175ee3bccc
+github.com/alecthomas/template
+github.com/alecthomas/template/parse
+# github.com/alecthomas/units v0.0.0-20151022065526-2efee857e7cf
+github.com/alecthomas/units
+# github.com/beorn7/perks v1.0.1
+github.com/beorn7/perks/quantile
+# github.com/cespare/xxhash/v2 v2.1.1
+github.com/cespare/xxhash/v2
+# github.com/containerd/continuity v0.0.0-20190426062206-aaeac12a7ffc
+github.com/containerd/continuity/pathdriver
+# github.com/davecgh/go-spew v1.1.1
+github.com/davecgh/go-spew/spew
+# github.com/docker/distribution v2.7.1+incompatible
+github.com/docker/distribution/registry/api/errcode
+# github.com/docker/docker v17.12.0-ce-rc1.0.20190628135806-70f67c6240bb+incompatible
+github.com/docker/docker/api/types/blkiodev
+github.com/docker/docker/api/types/container
+github.com/docker/docker/api/types/filters
+github.com/docker/docker/api/types/mount
+github.com/docker/docker/api/types/network
+github.com/docker/docker/api/types/registry
+github.com/docker/docker/api/types/strslice
+github.com/docker/docker/api/types/swarm
+github.com/docker/docker/api/types/swarm/runtime
+github.com/docker/docker/api/types/versions
+github.com/docker/docker/errdefs
+github.com/docker/docker/pkg/fileutils
+github.com/docker/docker/pkg/homedir
+github.com/docker/docker/pkg/idtools
+github.com/docker/docker/pkg/ioutils
+github.com/docker/docker/pkg/longpath
+github.com/docker/docker/pkg/mount
+github.com/docker/docker/pkg/pools
+github.com/docker/docker/pkg/stdcopy
+github.com/docker/docker/pkg/system
+# github.com/docker/go-connections v0.4.0
+github.com/docker/go-connections/nat
+# github.com/docker/go-units v0.4.0
+github.com/docker/go-units
+# github.com/eapache/go-resiliency v1.2.0
+github.com/eapache/go-resiliency/breaker
+# github.com/eapache/go-xerial-snappy v0.0.0-20180814174437-776d5712da21
+github.com/eapache/go-xerial-snappy
+# github.com/eapache/queue v1.1.0
+github.com/eapache/queue
+# github.com/fsnotify/fsnotify v1.4.9
+github.com/fsnotify/fsnotify
+# github.com/fsouza/go-dockerclient v1.4.1
+## explicit
+github.com/fsouza/go-dockerclient
+github.com/fsouza/go-dockerclient/internal/archive
+github.com/fsouza/go-dockerclient/internal/jsonmessage
+github.com/fsouza/go-dockerclient/internal/term
+# github.com/go-kit/kit v0.8.0
+github.com/go-kit/kit/log
+github.com/go-kit/kit/metrics
+github.com/go-kit/kit/metrics/internal/lv
+github.com/go-kit/kit/metrics/internal/ratemap
+github.com/go-kit/kit/metrics/prometheus
+github.com/go-kit/kit/metrics/statsd
+github.com/go-kit/kit/util/conn
+# github.com/go-logfmt/logfmt v0.4.0
+github.com/go-logfmt/logfmt
+# github.com/gogo/protobuf v1.3.2
+## explicit
+github.com/gogo/protobuf/proto
+# github.com/golang/protobuf v1.5.2
+## explicit
+github.com/golang/protobuf/jsonpb
+github.com/golang/protobuf/proto
+github.com/golang/protobuf/ptypes
+github.com/golang/protobuf/ptypes/any
+github.com/golang/protobuf/ptypes/duration
+github.com/golang/protobuf/ptypes/empty
+github.com/golang/protobuf/ptypes/timestamp
+# github.com/golang/snappy v0.0.2
+github.com/golang/snappy
+# github.com/gorilla/mux v1.7.2
+## explicit
+github.com/gorilla/mux
+# github.com/grpc-ecosystem/go-grpc-middleware v1.1.0
+## explicit
+github.com/grpc-ecosystem/go-grpc-middleware
+# github.com/hashicorp/go-version v1.2.0
+github.com/hashicorp/go-version
+# github.com/hyperledger/fabric v2.1.1+incompatible
+## explicit
+github.com/hyperledger/fabric/bccsp
+github.com/hyperledger/fabric/bccsp/factory
+github.com/hyperledger/fabric/bccsp/idemix
+github.com/hyperledger/fabric/bccsp/idemix/bridge
+github.com/hyperledger/fabric/bccsp/idemix/handlers
+github.com/hyperledger/fabric/bccsp/pkcs11
+github.com/hyperledger/fabric/bccsp/signer
+github.com/hyperledger/fabric/bccsp/sw
+github.com/hyperledger/fabric/bccsp/utils
+github.com/hyperledger/fabric/common/capabilities
+github.com/hyperledger/fabric/common/cauthdsl
+github.com/hyperledger/fabric/common/channelconfig
+github.com/hyperledger/fabric/common/configtx
+github.com/hyperledger/fabric/common/flogging
+github.com/hyperledger/fabric/common/flogging/fabenc
+github.com/hyperledger/fabric/common/ledger
+github.com/hyperledger/fabric/common/metrics
+github.com/hyperledger/fabric/common/policies
+github.com/hyperledger/fabric/common/util
+github.com/hyperledger/fabric/core/container/ccintf
+github.com/hyperledger/fabric/core/ledger
+github.com/hyperledger/fabric/core/ledger/util/couchdb
+github.com/hyperledger/fabric/core/scc
+github.com/hyperledger/fabric/idemix
+github.com/hyperledger/fabric/internal/pkg/comm
+github.com/hyperledger/fabric/internal/pkg/identity
+github.com/hyperledger/fabric/msp
+github.com/hyperledger/fabric/msp/cache
+github.com/hyperledger/fabric/protoutil
+# github.com/hyperledger/fabric-amcl v0.0.0-20200128223036-d1aa2665426a
+github.com/hyperledger/fabric-amcl/amcl
+github.com/hyperledger/fabric-amcl/amcl/FP256BN
+# github.com/hyperledger/fabric-chaincode-go v0.0.0-20210718160520-38d29fabecb9
+## explicit
+github.com/hyperledger/fabric-chaincode-go/shim
+github.com/hyperledger/fabric-chaincode-go/shim/internal
+# github.com/hyperledger/fabric-lib-go v1.0.0
+github.com/hyperledger/fabric-lib-go/healthz
+# github.com/hyperledger/fabric-protos-go v0.0.0-20210911123859-041d13f0980c
+## explicit
+github.com/hyperledger/fabric-protos-go/common
+github.com/hyperledger/fabric-protos-go/ledger/queryresult
+github.com/hyperledger/fabric-protos-go/ledger/rwset
+github.com/hyperledger/fabric-protos-go/ledger/rwset/kvrwset
+github.com/hyperledger/fabric-protos-go/msp
+github.com/hyperledger/fabric-protos-go/orderer
+github.com/hyperledger/fabric-protos-go/orderer/etcdraft
+github.com/hyperledger/fabric-protos-go/peer
+# github.com/ijc/Gotty v0.0.0-20170406111628-a8b993ba6abd
+github.com/ijc/Gotty
+# github.com/inconshreveable/mousetrap v1.0.0
+github.com/inconshreveable/mousetrap
+# github.com/kr/logfmt v0.0.0-20140226030751-b84e30acd515
+github.com/kr/logfmt
+# github.com/kr/pretty v0.2.0
+github.com/kr/pretty
+# github.com/kr/text v0.1.0
+github.com/kr/text
+# github.com/magiconair/properties v1.8.1
+github.com/magiconair/properties
+# github.com/matttproud/golang_protobuf_extensions v1.0.1
+github.com/matttproud/golang_protobuf_extensions/pbutil
+# github.com/miekg/pkcs11 v1.0.3
+github.com/miekg/pkcs11
+# github.com/mitchellh/mapstructure v1.2.2
+## explicit
+github.com/mitchellh/mapstructure
+# github.com/nxadm/tail v1.4.8
+github.com/nxadm/tail
+github.com/nxadm/tail/ratelimiter
+github.com/nxadm/tail/util
+github.com/nxadm/tail/watch
+github.com/nxadm/tail/winfile
+# github.com/onsi/ginkgo v1.16.4
+## explicit
+github.com/onsi/ginkgo
+github.com/onsi/ginkgo/config
+github.com/onsi/ginkgo/extensions/table
+github.com/onsi/ginkgo/formatter
+github.com/onsi/ginkgo/internal/codelocation
+github.com/onsi/ginkgo/internal/containernode
+github.com/onsi/ginkgo/internal/failer
+github.com/onsi/ginkgo/internal/global
+github.com/onsi/ginkgo/internal/leafnodes
+github.com/onsi/ginkgo/internal/remote
+github.com/onsi/ginkgo/internal/spec
+github.com/onsi/ginkgo/internal/spec_iterator
+github.com/onsi/ginkgo/internal/specrunner
+github.com/onsi/ginkgo/internal/suite
+github.com/onsi/ginkgo/internal/testingtproxy
+github.com/onsi/ginkgo/internal/writer
+github.com/onsi/ginkgo/reporters
+github.com/onsi/ginkgo/reporters/stenographer
+github.com/onsi/ginkgo/reporters/stenographer/support/go-colorable
+github.com/onsi/ginkgo/reporters/stenographer/support/go-isatty
+github.com/onsi/ginkgo/types
+# github.com/onsi/gomega v1.16.0
+## explicit
+github.com/onsi/gomega
+github.com/onsi/gomega/format
+github.com/onsi/gomega/gbytes
+github.com/onsi/gomega/gexec
+github.com/onsi/gomega/internal
+github.com/onsi/gomega/matchers
+github.com/onsi/gomega/matchers/support/goraph/bipartitegraph
+github.com/onsi/gomega/matchers/support/goraph/edge
+github.com/onsi/gomega/matchers/support/goraph/node
+github.com/onsi/gomega/matchers/support/goraph/util
+github.com/onsi/gomega/types
+# github.com/opencontainers/go-digest v1.0.0-rc1
+github.com/opencontainers/go-digest
+# github.com/opencontainers/image-spec v1.0.1
+github.com/opencontainers/image-spec/specs-go
+github.com/opencontainers/image-spec/specs-go/v1
+# github.com/opencontainers/runc v1.0.0-rc8
+github.com/opencontainers/runc/libcontainer/user
+# github.com/pierrec/lz4 v2.5.0+incompatible
+github.com/pierrec/lz4
+github.com/pierrec/lz4/internal/xxh32
+# github.com/pkg/errors v0.9.1
+## explicit
+github.com/pkg/errors
+# github.com/pmezard/go-difflib v1.0.0
+github.com/pmezard/go-difflib/difflib
+# github.com/prometheus/client_golang v1.1.0
+github.com/prometheus/client_golang/prometheus
+github.com/prometheus/client_golang/prometheus/internal
+github.com/prometheus/client_golang/prometheus/promhttp
+# github.com/prometheus/client_model v0.0.0-20190812154241-14fe0d1b01d4
+github.com/prometheus/client_model/go
+# github.com/prometheus/common v0.6.0
+github.com/prometheus/common/expfmt
+github.com/prometheus/common/internal/bitbucket.org/ww/goautoneg
+github.com/prometheus/common/model
+# github.com/prometheus/procfs v0.0.3
+github.com/prometheus/procfs
+github.com/prometheus/procfs/internal/fs
+# github.com/rcrowley/go-metrics v0.0.0-20181016184325-3113b8401b8a
+github.com/rcrowley/go-metrics
+# github.com/sirupsen/logrus v1.8.1
+## explicit
+github.com/sirupsen/logrus
+# github.com/spf13/cast v1.3.1
+github.com/spf13/cast
+# github.com/spf13/cobra v0.0.3
+## explicit
+github.com/spf13/cobra
+# github.com/spf13/jwalterweatherman v1.1.0
+github.com/spf13/jwalterweatherman
+# github.com/spf13/pflag v1.0.5
+## explicit
+github.com/spf13/pflag
+# github.com/spf13/viper v0.0.0-20150908122457-1967d93db724
+## explicit
+github.com/spf13/viper
+# github.com/stretchr/objx v0.1.1
+github.com/stretchr/objx
+# github.com/stretchr/testify v1.7.0
+## explicit
+github.com/stretchr/testify/assert
+github.com/stretchr/testify/mock
+github.com/stretchr/testify/require
+# github.com/sykesm/zap-logfmt v0.0.2
+github.com/sykesm/zap-logfmt
+# github.com/syndtr/goleveldb v1.0.1-0.20190625010220-02440ea7a285
+github.com/syndtr/goleveldb/leveldb
+github.com/syndtr/goleveldb/leveldb/cache
+github.com/syndtr/goleveldb/leveldb/comparer
+github.com/syndtr/goleveldb/leveldb/errors
+github.com/syndtr/goleveldb/leveldb/filter
+github.com/syndtr/goleveldb/leveldb/iterator
+github.com/syndtr/goleveldb/leveldb/journal
+github.com/syndtr/goleveldb/leveldb/memdb
+github.com/syndtr/goleveldb/leveldb/opt
+github.com/syndtr/goleveldb/leveldb/storage
+github.com/syndtr/goleveldb/leveldb/table
+github.com/syndtr/goleveldb/leveldb/util
+# github.com/tedsuo/ifrit v0.0.0-20180802180643-bea94bb476cc
+github.com/tedsuo/ifrit
+# github.com/willf/bitset v1.1.10
+github.com/willf/bitset
+# go.uber.org/atomic v1.6.0
+go.uber.org/atomic
+# go.uber.org/multierr v1.5.0
+go.uber.org/multierr
+# go.uber.org/zap v1.14.1
+go.uber.org/zap
+go.uber.org/zap/buffer
+go.uber.org/zap/internal/bufferpool
+go.uber.org/zap/internal/color
+go.uber.org/zap/internal/exit
+go.uber.org/zap/zapcore
+go.uber.org/zap/zapgrpc
+# golang.org/x/crypto v0.0.0-20200622213623-75b288015ac9
+golang.org/x/crypto/sha3
+# golang.org/x/net v0.0.0-20210428140749-89ef3d95e781
+golang.org/x/net/html
+golang.org/x/net/html/atom
+golang.org/x/net/html/charset
+golang.org/x/net/http/httpguts
+golang.org/x/net/http2
+golang.org/x/net/http2/hpack
+golang.org/x/net/idna
+golang.org/x/net/internal/timeseries
+golang.org/x/net/trace
+# golang.org/x/sys v0.0.0-20210423082822-04245dca01da
+golang.org/x/sys/cpu
+golang.org/x/sys/internal/unsafeheader
+golang.org/x/sys/unix
+golang.org/x/sys/windows
+# golang.org/x/text v0.3.6
+golang.org/x/text/encoding
+golang.org/x/text/encoding/charmap
+golang.org/x/text/encoding/htmlindex
+golang.org/x/text/encoding/internal
+golang.org/x/text/encoding/internal/identifier
+golang.org/x/text/encoding/japanese
+golang.org/x/text/encoding/korean
+golang.org/x/text/encoding/simplifiedchinese
+golang.org/x/text/encoding/traditionalchinese
+golang.org/x/text/encoding/unicode
+golang.org/x/text/internal/language
+golang.org/x/text/internal/language/compact
+golang.org/x/text/internal/tag
+golang.org/x/text/internal/utf8internal
+golang.org/x/text/language
+golang.org/x/text/runes
+golang.org/x/text/secure/bidirule
+golang.org/x/text/transform
+golang.org/x/text/unicode/bidi
+golang.org/x/text/unicode/norm
+# google.golang.org/genproto v0.0.0-20200526211855-cb27e3aa2013
+google.golang.org/genproto/googleapis/rpc/status
+# google.golang.org/grpc v1.41.0
+## explicit
+google.golang.org/grpc
+google.golang.org/grpc/attributes
+google.golang.org/grpc/backoff
+google.golang.org/grpc/balancer
+google.golang.org/grpc/balancer/base
+google.golang.org/grpc/balancer/grpclb/state
+google.golang.org/grpc/balancer/roundrobin
+google.golang.org/grpc/binarylog/grpc_binarylog_v1
+google.golang.org/grpc/codes
+google.golang.org/grpc/connectivity
+google.golang.org/grpc/credentials
+google.golang.org/grpc/encoding
+google.golang.org/grpc/encoding/proto
+google.golang.org/grpc/grpclog
+google.golang.org/grpc/health
+google.golang.org/grpc/health/grpc_health_v1
+google.golang.org/grpc/internal
+google.golang.org/grpc/internal/backoff
+google.golang.org/grpc/internal/balancerload
+google.golang.org/grpc/internal/binarylog
+google.golang.org/grpc/internal/buffer
+google.golang.org/grpc/internal/channelz
+google.golang.org/grpc/internal/credentials
+google.golang.org/grpc/internal/envconfig
+google.golang.org/grpc/internal/grpclog
+google.golang.org/grpc/internal/grpcrand
+google.golang.org/grpc/internal/grpcsync
+google.golang.org/grpc/internal/grpcutil
+google.golang.org/grpc/internal/metadata
+google.golang.org/grpc/internal/resolver
+google.golang.org/grpc/internal/resolver/dns
+google.golang.org/grpc/internal/resolver/passthrough
+google.golang.org/grpc/internal/resolver/unix
+google.golang.org/grpc/internal/serviceconfig
+google.golang.org/grpc/internal/status
+google.golang.org/grpc/internal/syscall
+google.golang.org/grpc/internal/transport
+google.golang.org/grpc/internal/transport/networktype
+google.golang.org/grpc/internal/xds/env
+google.golang.org/grpc/keepalive
+google.golang.org/grpc/metadata
+google.golang.org/grpc/peer
+google.golang.org/grpc/resolver
+google.golang.org/grpc/serviceconfig
+google.golang.org/grpc/stats
+google.golang.org/grpc/status
+google.golang.org/grpc/tap
+# google.golang.org/protobuf v1.26.0
+google.golang.org/protobuf/encoding/protojson
+google.golang.org/protobuf/encoding/prototext
+google.golang.org/protobuf/encoding/protowire
+google.golang.org/protobuf/internal/descfmt
+google.golang.org/protobuf/internal/descopts
+google.golang.org/protobuf/internal/detrand
+google.golang.org/protobuf/internal/encoding/defval
+google.golang.org/protobuf/internal/encoding/json
+google.golang.org/protobuf/internal/encoding/messageset
+google.golang.org/protobuf/internal/encoding/tag
+google.golang.org/protobuf/internal/encoding/text
+google.golang.org/protobuf/internal/errors
+google.golang.org/protobuf/internal/filedesc
+google.golang.org/protobuf/internal/filetype
+google.golang.org/protobuf/internal/flags
+google.golang.org/protobuf/internal/genid
+google.golang.org/protobuf/internal/impl
+google.golang.org/protobuf/internal/order
+google.golang.org/protobuf/internal/pragma
+google.golang.org/protobuf/internal/set
+google.golang.org/protobuf/internal/strs
+google.golang.org/protobuf/internal/version
+google.golang.org/protobuf/proto
+google.golang.org/protobuf/reflect/protodesc
+google.golang.org/protobuf/reflect/protoreflect
+google.golang.org/protobuf/reflect/protoregistry
+google.golang.org/protobuf/runtime/protoiface
+google.golang.org/protobuf/runtime/protoimpl
+google.golang.org/protobuf/types/descriptorpb
+google.golang.org/protobuf/types/known/anypb
+google.golang.org/protobuf/types/known/durationpb
+google.golang.org/protobuf/types/known/emptypb
+google.golang.org/protobuf/types/known/timestamppb
+# gopkg.in/alecthomas/kingpin.v2 v2.2.6
+## explicit
+gopkg.in/alecthomas/kingpin.v2
+# gopkg.in/tomb.v1 v1.0.0-20141024135613-dd632973f1e7
+gopkg.in/tomb.v1
+# gopkg.in/yaml.v2 v2.4.0
+## explicit
+gopkg.in/yaml.v2
+# gopkg.in/yaml.v3 v3.0.0-20200313102051-9f266ea9e77c
+gopkg.in/yaml.v3
