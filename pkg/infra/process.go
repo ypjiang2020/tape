@@ -272,7 +272,6 @@ func breakdown_phase2(config Config, logger *log.Logger) error {
 			return nil
 		}
 	}
-
 }
 
 func Process(config Config, logger *log.Logger) error {

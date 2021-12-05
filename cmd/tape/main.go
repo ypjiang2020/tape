@@ -29,7 +29,7 @@ var (
 	num_of_conn     = run.Flag("num_of_conn", "number of connections").Default("16").Int()
 	client_per_conn = run.Flag("client_per_conn", "clients per connection").Default("16").Int()
 	orderer_client  = run.Flag("orderer_client", "orderer clients").Default("20").Int()
-	threads         = run.Flag("thread", "signature thread").Default("20").Int()
+	threads         = run.Flag("thread", "signature thread").Default("1").Int()
 	endorser_groups = run.Flag("endorser_group", "endorser groups").Required().Int()
 
 	num_of_transactions  = run.Flag("number", "Number of tx for shot").Default("50000").Short('n').Int()
