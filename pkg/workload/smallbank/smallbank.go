@@ -2,6 +2,7 @@ package smallbank
 
 import (
 	"fmt"
+	"github.com/spf13/viper"
 	"log"
 	"math"
 	"os"
@@ -163,4 +164,22 @@ func (smallbank *SmallBank) sendPayment(txid string, src, dst int) []string {
 		smallbank.accounts[dst], // dest account
 		"1",                     // money
 	}
+}
+
+func (smallBank *SmallBank) LoadAccount() {
+	// TODO
+
+}
+
+func (smallBank *SmallBank) Workload() []string {
+	// TODO
+	if viper.GetString("transactionType") == "init" {
+		return smallBank.createAccount(utils.GetName(20))
+	} else {
+		return smallBank.sendPayment("", 0, 0)
+	}
+
+}
+func (smallBank *SmallBank) Stop() []string {
+	return smallBank.createAccount(utils.GetName(20) + "#end#")
 }

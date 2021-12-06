@@ -8,6 +8,7 @@ require (
 	github.com/Yunpeng-J/fabric-config v0.0.0-20210607091326-a85e56a3ec3c
 	github.com/Yunpeng-J/fabric-protos-go v0.0.0-20210928071911-ec2b84cdd1d8
 	github.com/fsouza/go-dockerclient v1.4.1
+	github.com/go-kit/kit v0.8.0
 	github.com/gogo/protobuf v1.3.2
 	github.com/golang/protobuf v1.5.2
 	github.com/gorilla/mux v1.7.2
@@ -19,6 +20,7 @@ require (
 	github.com/onsi/ginkgo v1.16.4
 	github.com/onsi/gomega v1.16.0
 	github.com/pkg/errors v0.9.1
+	github.com/prometheus/client_golang v1.1.0
 	github.com/sirupsen/logrus v1.8.1
 	github.com/spf13/cobra v0.0.3
 	github.com/spf13/pflag v1.0.5
