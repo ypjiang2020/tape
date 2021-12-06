@@ -1,35 +1,35 @@
 # Definition of nodes
 peer1: &peer1
   addr: localhost:7051
-  # tls_ca_cert: ./organizations/peerOrganizations/org1.example.com/peers/peer0.org1.example.com/msp/tlscacerts/tlsca.org1.example.com-cert.pem
+  tls_ca_cert: ./organizations/peerOrganizations/org1.example.com/peers/peer0.org1.example.com/msp/tlscacerts/tlsca.org1.example.com-cert.pem
 
 peer2: &peer2
   addr: localhost:8051
-  # tls_ca_cert: ./organizations/peerOrganizations/org1.example.com/peers/peer1.org1.example.com/msp/tlscacerts/tlsca.org1.example.com-cert.pem
+  tls_ca_cert: ./organizations/peerOrganizations/org1.example.com/peers/peer1.org1.example.com/msp/tlscacerts/tlsca.org1.example.com-cert.pem
 
 peer3: &peer3
   addr: localhost:9051
-  # tls_ca_cert: ./organizations/peerOrganizations/org2.example.com/peers/peer0.org2.example.com/msp/tlscacerts/tlsca.org2.example.com-cert.pem
+  tls_ca_cert: ./organizations/peerOrganizations/org2.example.com/peers/peer0.org2.example.com/msp/tlscacerts/tlsca.org2.example.com-cert.pem
 
 peer4: &peer4
   addr: localhost:10051
-  # tls_ca_cert: ./organizations/peerOrganizations/org2.example.com/peers/peer1.org2.example.com/msp/tlscacerts/tlsca.org2.example.com-cert.pem
+  tls_ca_cert: ./organizations/peerOrganizations/org2.example.com/peers/peer1.org2.example.com/msp/tlscacerts/tlsca.org2.example.com-cert.pem
 
 orderer1: &orderer1
   addr: localhost:7050
-  # tls_ca_cert: ./organizations/ordererOrganizations/example.com/msp/tlscacerts/tlsca.example.com-cert.pem
+  tls_ca_cert: ./organizations/ordererOrganizations/example.com/msp/tlscacerts/tlsca.example.com-cert.pem
 
 # Nodes to interact with
 endorser_groups: 1
 endorsers:
   - *peer1
-  - *peer2
+  # - *peer2
   # - *peer3
   # - *peer4
 # we might support multi-committer in the future for more complex test scenario,
 # i.e. consider tx committed only if it's done on >50% of nodes. But for now,
 # it seems sufficient to support single committer.
-committer: *peer1
+committer: *peer2
 orderer: *orderer1
 
 # Invocation configs
@@ -57,11 +57,11 @@ logdir: log.transactions
 check_txid: false 
 check_rwset: true # if true, output rwset for each transaction
 e2e: false  # end-to-end test
-seed: 2 # if seed equals to 0, set seed to the current time.
+seed: 190122399889940 # if seed equals to 0, set seed to the current time.
 
 # new parameters
 transactionType: init
-metricsType: disabled # or prometheus
+metricsType: prometheus
 metricsAddr: localhost:9876
-interval: 20
+interval: 10
 clientsPerEndorser: 1

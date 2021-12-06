@@ -3,18 +3,21 @@ package client
 import (
 	"context"
 	"fmt"
-	"github.com/Yunpeng-J/tape/pkg/workload/smallbank"
-	"github.com/Yunpeng-J/tape/pkg/operations"
-	"github.com/spf13/viper"
+	"math/rand"
 	"time"
+
+	"github.com/Yunpeng-J/tape/pkg/operations"
+	"github.com/Yunpeng-J/tape/pkg/workload/smallbank"
+	"github.com/spf13/viper"
 )
 
 var (
 	metricsSystem *operations.System
-	MAX_BUF = 100010
+	MAX_BUF       = 100010
 )
 
 func RunInitCmd(config Config) {
+	rand.Seed(int64(config.Seed))
 	start := time.Now()
 	metricsSystem = operations.NewSystem(operations.Options{
 		ListenAddress: viper.GetString("metricsAddr"),
@@ -32,6 +35,7 @@ func RunInitCmd(config Config) {
 		config.Committer,
 		crypto,
 		logger,
+		e2eCh,
 	)
 	done := make(chan struct{})
 	go observer.Start(viper.GetInt("clientsPerEndorser")*len(config.Endorsers), done)
@@ -51,9 +55,9 @@ func RunInitCmd(config Config) {
 	cm.Run(ctx)
 	for {
 		select {
-		case <- done:
+		case <-done:
 			logger.Infof("finish RunInitCmd in %d ms", time.Since(start).Milliseconds())
-			time.Sleep(time.Duration(1000)*time.Second)
+			time.Sleep(time.Duration(1000) * time.Second)
 			return
 		}
 	}

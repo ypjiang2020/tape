@@ -9,11 +9,11 @@ import (
 
 type Observer struct {
 	d      peer.Deliver_DeliverFilteredClient
-	e2eCh chan *Tracker
+	e2eCh  chan *Tracker
 	logger *log.Logger
 }
 
-func NewObserver(channel string, node Node, crypto *Crypto, logger *log.Logger) (*Observer, error) {
+func NewObserver(channel string, node Node, crypto *Crypto, logger *log.Logger, e2eCh chan *Tracker) (*Observer, error) {
 	deliverer, err := CreateDeliverFilteredClient(node, logger)
 	if err != nil {
 		return nil, err
@@ -33,7 +33,7 @@ func NewObserver(channel string, node Node, crypto *Crypto, logger *log.Logger) 
 		return nil, err
 	}
 
-	return &Observer{d: deliverer, logger: logger}, nil
+	return &Observer{d: deliverer, logger: logger, e2eCh: e2eCh}, nil
 }
 
 func (o *Observer) Start(numOfClients int, done chan struct{}) {
@@ -42,7 +42,7 @@ func (o *Observer) Start(numOfClients int, done chan struct{}) {
 		r, err := o.d.Recv()
 		if err != nil {
 			o.logger.Errorf("observer recieve from orderer error: %v", err)
-			continue
+			return
 		}
 		if r == nil {
 			o.logger.Panicf("received nil message, but expect a valid block instead. You could look into your peer logs for more info")
@@ -51,19 +51,21 @@ func (o *Observer) Start(numOfClients int, done chan struct{}) {
 		cur := time.Now()
 		switch t := r.Type.(type) {
 		case *peer.DeliverResponse_FilteredBlock:
+			o.logger.Infof("observer receive block %d with length %d", t.FilteredBlock.Number, len(t.FilteredBlock.FilteredTransactions))
 			for _, tx := range t.FilteredBlock.FilteredTransactions {
 				txid := tx.GetTxid()
-				if txid[len(txid) - 5:] == "#end#" {
+				o.e2eCh <- &Tracker{
+					txid:      txid,
+					timestamp: cur,
+				}
+				if txid[len(txid)-5:] == "#end#" {
 					numOfClients -= 1
+					o.logger.Infof("some client ends")
 					if numOfClients == 0 {
 						o.logger.Infof("observer finished")
 						done <- struct{}{}
 						return
 					}
-				}
-				o.e2eCh <- &Tracker{
-					txid:     txid,
-					timestamp: cur,
 				}
 			}
 		case *peer.DeliverResponse_Status:
