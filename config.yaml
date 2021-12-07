@@ -60,8 +60,18 @@ e2e: false  # end-to-end test
 seed: 190122399889940 # if seed equals to 0, set seed to the current time.
 
 # new parameters
-transactionType: init
+# transactionType: init
 metricsType: prometheus
 metricsAddr: localhost:9876
 interval: 10
 clientsPerEndorser: 1
+
+workload: smallbank
+workloadDirectory: ./__workload
+accountNumber: 10000
+hotAccountRate: 0.01
+transactionNumber: 10000
+maxTxsPerSession: 30
+minTxsPerSession: 5
+maxHotPay: 10 # not used
+zipfs: 1.0

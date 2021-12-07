@@ -1,7 +1,9 @@
 package smallbank
 
 import (
+	"bufio"
 	"fmt"
+	"github.com/Yunpeng-J/tape/pkg/workload"
 	"github.com/spf13/viper"
 	"log"
 	"math"
@@ -21,7 +23,6 @@ import (
 type SmallBank struct {
 	accountNumber     int
 	hotAccountRate    float64
-	zipfs             float64
 	transactionNumber int
 	directory         string
 
@@ -32,36 +33,54 @@ type SmallBank struct {
 
 	accounts   []string
 	hotAccount int
+
+	zipf *utils.Zipf
+	ch   chan string
 }
 
-var defaultSmallbank = &SmallBank{
-	accountNumber:     100000,
-	hotAccountRate:    0.01,
-	zipfs:             1,
-	transactionNumber: 100000,
-	directory:         ".",
-	clients:           80,
-	maxTxsPerSession:  50,
-	minTxsPerSession:  5,
-	maxHotPay:         20,
-	accounts:          nil,
-	hotAccount:        1000,
+func init() {
+	viper.SetDefault("accountNumber", 10000)
+	viper.SetDefault("hotAccountRate", 0.01)
+	viper.SetDefault("transactionNumber", 10000)
+	viper.SetDefault("workloadDirectory", "./__workload")
+	viper.SetDefault("maxTxsPerSession", 30)
+	viper.SetDefault("minTxsPerSession", 2)
+	viper.SetDefault("maxHotPay", 10)
+	viper.SetDefault("zipfs", 1.0)
+	viper.SetDefault("clientsPerEndorser", 1)
 }
 
-func NewSmallBank(actNum int, clientNum int, hotRate, zipfs float64, dir string) *SmallBank {
-	return &SmallBank{
-		accountNumber:  actNum,
-		hotAccountRate: hotRate,
-		zipfs:          zipfs,
-		transactionNumber: 100000,
-		directory:      dir,
-		clients:        clientNum,
-		maxTxsPerSession: 50,
-		minTxsPerSession: 5,
-		maxHotPay: 20,
-		accounts: nil,
-		hotAccount:     int(float64(actNum) * hotRate),
+func NewSmallBank() *SmallBank {
+	res := &SmallBank{
+		accountNumber:     viper.GetInt("accountNumber"),
+		hotAccountRate:    viper.GetFloat64("hotAccountRate"),
+		transactionNumber: viper.GetInt("transactionNumber"),
+		directory:         viper.GetString("workloadDirectory"),
+		clients:           viper.GetInt("clientsPerEndorser"),
+		maxTxsPerSession:  viper.GetInt("maxTxsPerSession"),
+		minTxsPerSession:  viper.GetInt("minTxsPerSession"),
+		maxHotPay:         viper.GetInt("maxHotPay"),
+		accounts:          nil,
+		ch:                make(chan string, 10000),
 	}
+	res.hotAccount = int(float64(res.accountNumber) * res.hotAccountRate)
+	res.zipf = utils.NewZipf(res.accountNumber, viper.GetFloat64("zipfs"))
+
+	log.Printf("######\tworkload config (smallbank)\t######\n%v", res)
+
+	if viper.GetString("transactionType") == "init" {
+		go res.saveAccount()
+		// os.RemoveAll(res.directory + "/account")
+		// res.Init()
+	} else {
+		res.loadAccount()
+		// res.GenerateTransaction()
+	}
+	return res
+}
+
+func (smallBank *SmallBank) ForEachClient(id int) workload.Generator {
+	return NewGenerator(smallBank, id)
 }
 
 func (smallBank *SmallBank) Init() {
@@ -102,7 +121,6 @@ func (smallBank *SmallBank) Init() {
 }
 
 func (smallBank *SmallBank) GenerateTransaction() {
-	zipf := utils.NewZipf(smallBank.accountNumber, smallBank.zipfs)
 	now := time.Now()
 	defer func() {
 		log.Printf("smallbank generate transaction in %d ms\n", time.Since(now).Milliseconds())
@@ -131,10 +149,10 @@ func (smallBank *SmallBank) GenerateTransaction() {
 			for k < txThisSession {
 				k += 1
 				txid := fmt.Sprintf("%d_+=+_%s_+=+_%s", k, session, utils.GetName(20))
-				from := zipf.Generate()
-				to := zipf.Generate()
+				from := smallBank.zipf.Generate()
+				to := smallBank.zipf.Generate()
 				for to == from {
-					to = zipf.Generate()
+					to = smallBank.zipf.Generate()
 				}
 				f.WriteString(fmt.Sprintf("%s %s %s\n", txid, smallBank.accounts[from], smallBank.accounts[to]))
 			}
@@ -166,20 +184,31 @@ func (smallbank *SmallBank) sendPayment(txid string, src, dst int) []string {
 	}
 }
 
-func (smallBank *SmallBank) LoadAccount() {
-	// TODO
-
-}
-
-func (smallBank *SmallBank) Workload() []string {
-	// TODO
-	if viper.GetString("transactionType") == "init" {
-		return smallBank.createAccount(utils.GetName(20))
-	} else {
-		return smallBank.sendPayment("", 0, 0)
+func (smallBank *SmallBank) loadAccount() {
+	accountFile := smallBank.directory + "/account/account.txt"
+	f, err := os.Open(accountFile)
+	if err != nil {
+		panic(fmt.Sprintf("cannot open: %s", accountFile))
 	}
-
+	input := bufio.NewScanner(f)
+	for input.Scan() {
+		smallBank.accounts = append(smallBank.accounts, input.Text())
+	}
+	log.Printf("load %d accounts from %s", len(smallBank.accounts), accountFile)
 }
-func (smallBank *SmallBank) Stop() []string {
-	return smallBank.createAccount(utils.GetName(20) + "#end#")
+
+func (smallBank *SmallBank) saveAccount() {
+	err := os.MkdirAll(smallBank.directory+"/account", os.ModePerm)
+	if err != nil {
+		panic(fmt.Sprintf("create directory failed: %v", err))
+	}
+	f, err := os.Create(smallBank.directory + "/account/account.txt")
+	if err != nil {
+		panic(fmt.Sprintf("create file account.txt failed: %v", err))
+	}
+	defer f.Close()
+	for i := 0; i < smallBank.accountNumber; i++ {
+		account := <-smallBank.ch
+		f.WriteString(account + "\n")
+	}
 }

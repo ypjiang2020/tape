@@ -1,9 +1,8 @@
 package main
 
 import (
-	"fmt"
 	"log"
-
+	"fmt"
 	"github.com/Yunpeng-J/tape/pkg/client"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -15,16 +14,14 @@ var (
 		Use:   "benchmark",
 		Short: "A close loop client",
 		Run: func(cmd *cobra.Command, args []string) {
-			log.Printf(viper.GetString("config"))
-			log.Println(viper.GetString("channel"))
-			log.Println(viper.Get("endorsers"))
-			log.Println(viper.Get("committer"))
+			log.Printf("TODO")
 		},
 	}
 	initCmd = &cobra.Command{
 		Use:   "init",
 		Short: "initialize blockchain state",
 		Run: func(cmd *cobra.Command, args []string) {
+			viper.SetDefault("transactionType", "init")
 			client.RunInitCmd(config)
 		},
 	}
@@ -32,18 +29,22 @@ var (
 		Use:   "txn",
 		Short: "send transactions",
 		Run: func(cmd *cobra.Command, args []string) {
+			viper.SetDefault("transactionType", "txn")
 			client.RunTxnCmd(config)
-
 		},
 	}
 )
 
 func init() {
 	cobra.OnInitialize(initConfig)
-	rootCmd.PersistentFlags().StringP("config", "c", "config.yaml", "config file")
-	rootCmd.PersistentFlags().IntP("interval", "i", 10, "benchmark time in seconds, default 10s")
+	rootCmd.PersistentFlags().StringP("config", "", "config.yaml", "config file")
+	rootCmd.PersistentFlags().StringP("workload", "", "smallbank", "the type of workload")
+	rootCmd.PersistentFlags().IntP("interval", "", 10, "benchmark time in seconds, default 10s")
+	rootCmd.PersistentFlags().IntP("clientsPerEndorser", "", 1, "the number of clients for one endorser")
 	viper.BindPFlag("config", rootCmd.PersistentFlags().Lookup("config"))
 	viper.BindPFlag("interval", rootCmd.PersistentFlags().Lookup("interval"))
+	viper.BindPFlag("clientsPerEndorser", rootCmd.PersistentFlags().Lookup("clientsPerEndorser"))
+	viper.BindPFlag("workload", rootCmd.PersistentFlags().Lookup("workload"))
 	rootCmd.AddCommand(initCmd)
 	rootCmd.AddCommand(transactionCmd)
 

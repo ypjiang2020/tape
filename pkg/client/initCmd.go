@@ -3,11 +3,11 @@ package client
 import (
 	"context"
 	"fmt"
+	"github.com/Yunpeng-J/tape/pkg/workload"
 	"math/rand"
 	"time"
 
 	"github.com/Yunpeng-J/tape/pkg/operations"
-	"github.com/Yunpeng-J/tape/pkg/workload/smallbank"
 	"github.com/spf13/viper"
 )
 
@@ -17,6 +17,10 @@ var (
 )
 
 func RunInitCmd(config Config) {
+	runCmd(config)
+}
+
+func runCmd(config Config) {
 	rand.Seed(int64(config.Seed))
 	start := time.Now()
 	metricsSystem = operations.NewSystem(operations.Options{
@@ -40,17 +44,21 @@ func RunInitCmd(config Config) {
 	done := make(chan struct{})
 	go observer.Start(viper.GetInt("clientsPerEndorser")*len(config.Endorsers), done)
 
-	gen := smallbank.NewSmallBank(100, 10, 0.1, 1, ".")
+	workload := workload.NewWorkloadProvider()
 	cm := NewClientManager(
 		e2eCh,
 		config.Endorsers,
 		config.Orderer,
 		crypto,
 		viper.GetInt("clientsPerEndorser"),
-		gen,
+		workload.Provider,
 		metricsSystem.Provider,
 	)
-	ctx, cancel := context.WithTimeout(context.Background(), time.Duration(viper.GetInt("interval"))*time.Second)
+	timeout := viper.GetInt("interval")
+	if viper.GetString("transactionType") == "init" {
+		timeout = 10000
+	}
+	ctx, cancel := context.WithTimeout(context.Background(), time.Duration(timeout)*time.Second)
 	_ = cancel
 	cm.Run(ctx)
 	for {

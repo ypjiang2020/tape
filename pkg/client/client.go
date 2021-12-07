@@ -23,26 +23,27 @@ func init() {
 }
 
 type ClientManager struct {
-	clients   [][]*Client
-	generator workload.Generator
-	e2eCh     chan *Tracker
-	metrics   *Metrics
+	clients  [][]*Client
+	workload workload.Provider
+	e2eCh    chan *Tracker
+	metrics  *Metrics
 }
 
-func NewClientManager(e2eCh chan *Tracker, endorsers []Node, orderer Node, crypto *Crypto, client int, gen workload.Generator, provider metrics.Provider) *ClientManager {
+func NewClientManager(e2eCh chan *Tracker, endorsers []Node, orderer Node, crypto *Crypto, client int, gen workload.Provider, provider metrics.Provider) *ClientManager {
 	if client < 1 {
 		panic("clientsPerEndorser must be greater than 0")
 	}
 	clientManager := &ClientManager{
-		clients:   make([][]*Client, len(endorsers)),
-		generator: gen,
-		e2eCh:     e2eCh,
-		metrics:   NewMetrics(provider),
+		clients:  make([][]*Client, len(endorsers)),
+		workload: gen,
+		e2eCh:    e2eCh,
+		metrics:  NewMetrics(provider),
 	}
 	cnt := 0
 	for i := 0; i < len(endorsers); i++ {
 		for j := 0; j < client; j++ {
-			cli := NewClient(cnt, i, endorsers[i], orderer, crypto, clientManager.metrics, e2eCh)
+			generator := clientManager.workload.ForEachClient(cnt)
+			cli := NewClient(cnt, i, endorsers[i], orderer, crypto, generator, clientManager.metrics, e2eCh)
 			clientManager.clients[i] = append(clientManager.clients[i], cli)
 			cnt += 1
 		}
@@ -68,7 +69,7 @@ func (cm *ClientManager) Run(ctx context.Context) {
 	for i := 0; i < len(cm.clients); i++ {
 		for j := 0; j < len(cm.clients[i]); j++ {
 			go cm.clients[i][j].StartDraining()
-			go cm.clients[i][j].Run(cm.generator, ctx)
+			go cm.clients[i][j].Run(ctx)
 		}
 	}
 }
@@ -76,6 +77,7 @@ func (cm *ClientManager) Run(ctx context.Context) {
 type Client struct {
 	id         int
 	endorserID int
+	workload workload.Generator
 	endorser   peer.EndorserClient
 	orderer    orderer.AtomicBroadcast_BroadcastClient
 	crypto     *Crypto
@@ -84,10 +86,11 @@ type Client struct {
 	metrics *Metrics
 }
 
-func NewClient(id int, endorserId int, endorser, orderer Node, crypto *Crypto, metrics *Metrics, e2eCh chan *Tracker) *Client {
+func NewClient(id int, endorserId int, endorser, orderer Node, crypto *Crypto, generate workload.Generator, metrics *Metrics, e2eCh chan *Tracker) *Client {
 	client := &Client{
 		id:         id,
 		endorserID: endorserId,
+		workload: generate,
 		crypto:     crypto,
 		metrics:    metrics,
 		e2eCh:      e2eCh,
@@ -122,21 +125,21 @@ func (client *Client) StartDraining() {
 	}
 }
 
-func (client *Client) Run(gen workload.Generator, ctx context.Context) {
+func (client *Client) Run(ctx context.Context) {
 	for {
 		select {
 		case <-ctx.Done():
 			// timeout
-			txn := gen.Stop()
+			txn := client.workload.Stop()
 			logger.Infof("client %d for endorser %d is ready to stop", client.id, client.endorserID)
 			client.sendTransaction(txn)
 			return
 		default:
 			// time.Sleep(10 * time.Millisecond)
-			txn := gen.Workload()
+			txn := client.workload.Generate()
 			if len(txn) == 0 {
 				// end of file
-				txn := gen.Stop()
+				txn := client.workload.Stop()
 				client.sendTransaction(txn)
 				return
 			}
