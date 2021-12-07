@@ -7,13 +7,8 @@ import (
 	"github.com/spf13/viper"
 )
 
-type Generator interface {
-	Generate() []string
-	Stop() []string
-}
-
 type Provider interface {
-	ForEachClient(i int) Generator
+	ForEachClient(i int) smallbank.GeneratorT
 }
 
 type WorkloadProvider struct {

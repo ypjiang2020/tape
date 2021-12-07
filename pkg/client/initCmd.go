@@ -22,7 +22,11 @@ func RunInitCmd(config Config) {
 }
 
 func runCmd(config Config) {
-	rand.Seed(int64(config.Seed))
+	seed := int64(viper.GetInt("newseed"))
+	if seed == 0 {
+		seed = time.Now().UnixNano()
+	}
+	rand.Seed(seed)
 	start := time.Now()
 	metricsSystem = operations.NewSystem(operations.Options{
 		ListenAddress: viper.GetString("metricsAddr"),

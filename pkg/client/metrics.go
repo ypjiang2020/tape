@@ -11,6 +11,10 @@ var (
 		Name: "e2eLatency",
 		Help: "from create transaction to receive commit ack",
 	}
+	orderingLatency = metrics.HistogramOpts{
+		Name: "orderingLatency",
+		Help: "from broadcasting envelope to receiving ack",
+	}
 	numOfTransaction = metrics.CounterOpts{
 		Name: "numOfTransaction",
 		Help: "the number of transaction that broadcast to ordering service",
@@ -24,6 +28,7 @@ var (
 type Metrics struct {
 	EndorsementLatency   metrics.Histogram
 	E2eLatency           metrics.Histogram
+	OrderingLatency      metrics.Histogram
 	NumOfTransaction     metrics.Counter
 	CommittedTransaction metrics.Counter
 }
@@ -32,6 +37,7 @@ func NewMetrics(p metrics.Provider) *Metrics {
 	return &Metrics{
 		EndorsementLatency:   p.NewHistogram(endorsementLatency),
 		E2eLatency:           p.NewHistogram(e2eLatency),
+		OrderingLatency:      p.NewHistogram(orderingLatency),
 		NumOfTransaction:     p.NewCounter(numOfTransaction),
 		CommittedTransaction: p.NewCounter(committedTransaction),
 	}

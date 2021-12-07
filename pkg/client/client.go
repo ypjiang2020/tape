@@ -11,6 +11,7 @@ import (
 	"github.com/Yunpeng-J/fabric-protos-go/peer"
 	"github.com/Yunpeng-J/tape/pkg/metrics"
 	"github.com/Yunpeng-J/tape/pkg/workload"
+	"github.com/Yunpeng-J/tape/pkg/workload/smallbank"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 )
@@ -68,7 +69,7 @@ func (cm *ClientManager) Run(ctx context.Context) {
 	go cm.Drain()
 	for i := 0; i < len(cm.clients); i++ {
 		for j := 0; j < len(cm.clients[i]); j++ {
-			go cm.clients[i][j].StartDraining()
+			// go cm.clients[i][j].StartDraining()
 			go cm.clients[i][j].Run(ctx)
 		}
 	}
@@ -77,7 +78,7 @@ func (cm *ClientManager) Run(ctx context.Context) {
 type Client struct {
 	id         int
 	endorserID int
-	workload   workload.Generator
+	workload   smallbank.GeneratorT
 	endorser   peer.EndorserClient
 	orderer    orderer.AtomicBroadcast_BroadcastClient
 	crypto     *Crypto
@@ -86,7 +87,7 @@ type Client struct {
 	metrics *Metrics
 }
 
-func NewClient(id int, endorserId int, endorser, orderer Node, crypto *Crypto, generate workload.Generator, metrics *Metrics, e2eCh chan *Tracker) *Client {
+func NewClient(id int, endorserId int, endorser, orderer Node, crypto *Crypto, generate smallbank.GeneratorT, metrics *Metrics, e2eCh chan *Tracker) *Client {
 	client := &Client{
 		id:         id,
 		endorserID: endorserId,
@@ -159,7 +160,7 @@ func (client *Client) sendTransaction(txn []string) (err error) {
 		} else {
 			client.metrics.EndorsementLatency.Observe(endorsementLatency)
 			client.metrics.NumOfTransaction.Add(1)
-			// async ordering latency
+			client.metrics.OrderingLatency.Observe(time.Since(start).Seconds())
 		}
 	}()
 	prop, txid, err := CreateProposal(
@@ -202,6 +203,18 @@ func (client *Client) sendTransaction(txn []string) (err error) {
 	err = client.orderer.Send(envelope)
 	if err != nil {
 		log.Errorf("send to order failed: %v", err)
+		return err
+	}
+	res, err := client.orderer.Recv()
+	if err != nil {
+		if err == io.EOF {
+			return err
+		}
+		logger.Errorf("recv from orderer error: %v", err)
+		return err
+	}
+	if res.Status != common.Status_SUCCESS {
+		logger.Errorf("recv from orderer, status: %s", res.Status)
 		return err
 	}
 	return nil

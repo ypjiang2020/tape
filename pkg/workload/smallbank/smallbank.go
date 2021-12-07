@@ -9,7 +9,6 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/Yunpeng-J/tape/pkg/workload"
 	"github.com/spf13/viper"
 
 	"github.com/Yunpeng-J/tape/pkg/workload/utils"
@@ -66,7 +65,7 @@ func NewSmallBank() *SmallBank {
 	res.hotAccount = int(float64(res.accountNumber) * res.hotAccountRate)
 	res.zipf = utils.NewZipf(res.accountNumber, viper.GetFloat64("zipfs"))
 
-	log.Printf("######\tworkload config (smallbank)\t######\n%v", res)
+	log.Printf("\n######\tworkload config (smallbank)\t######\n%v", res)
 
 	if viper.GetString("transactionType") == "init" {
 		go res.saveAccount()
@@ -79,7 +78,7 @@ func NewSmallBank() *SmallBank {
 	return res
 }
 
-func (smallBank *SmallBank) ForEachClient(id int) workload.Generator {
+func (smallBank *SmallBank) ForEachClient(id int) GeneratorT {
 	return NewGenerator(smallBank, id)
 }
 

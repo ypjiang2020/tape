@@ -8,6 +8,11 @@ import (
 	"github.com/spf13/viper"
 )
 
+type GeneratorT interface {
+	Generate() []string
+	Stop() []string
+}
+
 type Generator struct {
 	smallBank *SmallBank
 	id        int
