@@ -1,8 +1,9 @@
 package main
 
 import (
-	"log"
 	"fmt"
+	"log"
+
 	"github.com/Yunpeng-J/tape/pkg/client"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -49,7 +50,6 @@ func init() {
 	rootCmd.AddCommand(transactionCmd)
 
 }
-
 func initConfig() {
 	conf := viper.GetString("config")
 	viper.SetConfigFile(conf)

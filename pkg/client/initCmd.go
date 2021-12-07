@@ -3,9 +3,10 @@ package client
 import (
 	"context"
 	"fmt"
-	"github.com/Yunpeng-J/tape/pkg/workload"
 	"math/rand"
 	"time"
+
+	"github.com/Yunpeng-J/tape/pkg/workload"
 
 	"github.com/Yunpeng-J/tape/pkg/operations"
 	"github.com/spf13/viper"

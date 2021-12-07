@@ -77,7 +77,7 @@ func (cm *ClientManager) Run(ctx context.Context) {
 type Client struct {
 	id         int
 	endorserID int
-	workload workload.Generator
+	workload   workload.Generator
 	endorser   peer.EndorserClient
 	orderer    orderer.AtomicBroadcast_BroadcastClient
 	crypto     *Crypto
@@ -90,7 +90,7 @@ func NewClient(id int, endorserId int, endorser, orderer Node, crypto *Crypto, g
 	client := &Client{
 		id:         id,
 		endorserID: endorserId,
-		workload: generate,
+		workload:   generate,
 		crypto:     crypto,
 		metrics:    metrics,
 		e2eCh:      e2eCh,

@@ -2,9 +2,10 @@ package smallbank
 
 import (
 	"fmt"
+	"strconv"
+
 	"github.com/Yunpeng-J/tape/pkg/workload/utils"
 	"github.com/spf13/viper"
-	"strconv"
 )
 
 type Generator struct {
@@ -17,7 +18,7 @@ func NewGenerator(smlbk *SmallBank, id int) *Generator {
 	res := &Generator{
 		smallBank: smlbk,
 		id:        id,
-		ch: make(chan *[]string, 10),
+		ch:        make(chan *[]string, 10),
 	}
 	res.start()
 	return res
@@ -45,12 +46,12 @@ func (gen *Generator) start() {
 func (gen *Generator) createAccount() {
 	session := utils.GetName(20)
 	money := strconv.Itoa(1e9)
-	txsPerClient := gen.smallBank.accountNumber / gen.smallBank.clients + 1
+	txsPerClient := gen.smallBank.accountNumber/gen.smallBank.clients + 1
 	for j := 0; j < txsPerClient; j++ {
 		txid := fmt.Sprintf("%d_+=+_%s_+=+_%s", j, session, utils.GetName(20))
 		idx := utils.GetName(64)
 		gen.smallBank.ch <- idx
-		gen.ch	<- &[]string{txid, "CreateAccount", idx, idx, money, money}
+		gen.ch <- &[]string{txid, "CreateAccount", idx, idx, money, money}
 	}
 	gen.ch <- &[]string{} // stop signal
 }

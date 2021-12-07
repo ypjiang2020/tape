@@ -3,13 +3,14 @@ package smallbank
 import (
 	"bufio"
 	"fmt"
-	"github.com/Yunpeng-J/tape/pkg/workload"
-	"github.com/spf13/viper"
 	"log"
 	"math"
 	"os"
 	"strconv"
 	"time"
+
+	"github.com/Yunpeng-J/tape/pkg/workload"
+	"github.com/spf13/viper"
 
 	"github.com/Yunpeng-J/tape/pkg/workload/utils"
 )
@@ -18,7 +19,6 @@ import (
 
 // params:
 // clients number: session number
-//
 
 type SmallBank struct {
 	accountNumber     int
@@ -207,8 +207,12 @@ func (smallBank *SmallBank) saveAccount() {
 		panic(fmt.Sprintf("create file account.txt failed: %v", err))
 	}
 	defer f.Close()
-	for i := 0; i < smallBank.accountNumber; i++ {
+	i := 0
+	for i < smallBank.accountNumber {
 		account := <-smallBank.ch
-		f.WriteString(account + "\n")
+		if account[len(account)-5:] != "#end#" {
+			f.WriteString(account + "\n")
+			i += 1
+		}
 	}
 }
