@@ -11,6 +11,7 @@ import (
 
 	"github.com/spf13/viper"
 
+	"github.com/Yunpeng-J/tape/pkg/metrics"
 	"github.com/Yunpeng-J/tape/pkg/workload/utils"
 )
 
@@ -35,6 +36,8 @@ type SmallBank struct {
 
 	zipf *utils.Zipf
 	ch   chan string
+
+	metrics *Metrics
 }
 
 func init() {
@@ -49,23 +52,24 @@ func init() {
 	viper.SetDefault("clientsPerEndorser", 1)
 }
 
-func NewSmallBank() *SmallBank {
+func NewSmallBank(provider metrics.Provider) *SmallBank {
 	res := &SmallBank{
 		accountNumber:     viper.GetInt("accountNumber"),
 		hotAccountRate:    viper.GetFloat64("hotAccountRate"),
 		transactionNumber: viper.GetInt("transactionNumber"),
 		directory:         viper.GetString("workloadDirectory"),
-		clients:           viper.GetInt("clientsPerEndorser"),
+		clients:           viper.GetInt("clientsNumber"),
 		maxTxsPerSession:  viper.GetInt("maxTxsPerSession"),
 		minTxsPerSession:  viper.GetInt("minTxsPerSession"),
 		maxHotPay:         viper.GetInt("maxHotPay"),
 		accounts:          nil,
 		ch:                make(chan string, 10000),
+		metrics:           NewMetrics(provider),
 	}
 	res.hotAccount = int(float64(res.accountNumber) * res.hotAccountRate)
 	res.zipf = utils.NewZipf(res.accountNumber, viper.GetFloat64("zipfs"))
 
-	log.Printf("\n######\tworkload config (smallbank)\t######\n%v", res)
+	log.Printf("\n######\tworkload config (smallbank)\t######\n %v", res)
 
 	if viper.GetString("transactionType") == "init" {
 		go res.saveAccount()

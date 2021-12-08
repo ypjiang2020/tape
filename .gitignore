@@ -25,3 +25,6 @@ ENDORSEMENT
 log*
 latency*
 temp.log
+__workload
+vendor
+tip

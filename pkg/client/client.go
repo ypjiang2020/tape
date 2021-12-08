@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"strconv"
 	"time"
 
 	"github.com/Yunpeng-J/fabric-protos-go/common"
@@ -49,8 +50,10 @@ func NewClientManager(e2eCh chan *Tracker, endorsers []Node, orderer Node, crypt
 			cnt += 1
 		}
 	}
+	logger.Infof("endorsers: %d clients: %d", len(endorsers), cnt)
 	return clientManager
 }
+
 func (cm *ClientManager) Drain() {
 	e2e := map[string]time.Time{}
 	for {
@@ -69,32 +72,34 @@ func (cm *ClientManager) Run(ctx context.Context) {
 	go cm.Drain()
 	for i := 0; i < len(cm.clients); i++ {
 		for j := 0; j < len(cm.clients[i]); j++ {
-			// go cm.clients[i][j].StartDraining()
+			go cm.clients[i][j].StartDraining()
 			go cm.clients[i][j].Run(ctx)
 		}
 	}
 }
 
 type Client struct {
-	id         int
-	endorserID int
+	id         string
+	endorserID string
 	workload   smallbank.GeneratorT
 	endorser   peer.EndorserClient
 	orderer    orderer.AtomicBroadcast_BroadcastClient
 	crypto     *Crypto
 	e2eCh      chan *Tracker
+	done       chan struct{}
 
 	metrics *Metrics
 }
 
 func NewClient(id int, endorserId int, endorser, orderer Node, crypto *Crypto, generate smallbank.GeneratorT, metrics *Metrics, e2eCh chan *Tracker) *Client {
 	client := &Client{
-		id:         id,
-		endorserID: endorserId,
+		id:         strconv.Itoa(id),
+		endorserID: strconv.Itoa(endorserId),
 		workload:   generate,
 		crypto:     crypto,
 		metrics:    metrics,
 		e2eCh:      e2eCh,
+		done:       make(chan struct{}),
 	}
 	var err error
 	client.orderer, err = CreateBroadcastClient(orderer, logger)
@@ -111,22 +116,29 @@ func NewClient(id int, endorserId int, endorser, orderer Node, crypto *Crypto, g
 func (client *Client) StartDraining() {
 	// TODO: metric
 	for {
-		res, err := client.orderer.Recv()
-		if err != nil {
-			if err == io.EOF {
+		select {
+		case <-client.done:
+			return
+		default:
+			res, err := client.orderer.Recv()
+			if err != nil {
+				if err == io.EOF {
+					return
+				}
+				logger.Errorf("recv from orderer error: %v", err)
 				return
 			}
-			logger.Errorf("recv from orderer error: %v", err)
-			return
-		}
-		if res.Status != common.Status_SUCCESS {
-			logger.Errorf("recv from orderer, status: %s", res.Status)
-			continue
+			if res.Status != common.Status_SUCCESS {
+				logger.Errorf("recv from orderer, status: %s", res.Status)
+				return
+			}
 		}
 	}
 }
-
 func (client *Client) Run(ctx context.Context) {
+	defer func() {
+		client.done <- struct{}{}
+	}()
 	for {
 		select {
 		case <-ctx.Done():
@@ -158,9 +170,9 @@ func (client *Client) sendTransaction(txn []string) (err error) {
 			logger.Errorf("send transaction failed: %v", err)
 			// failed
 		} else {
-			client.metrics.EndorsementLatency.Observe(endorsementLatency)
-			client.metrics.NumOfTransaction.Add(1)
-			client.metrics.OrderingLatency.Observe(time.Since(start).Seconds())
+			client.metrics.EndorsementLatency.With("EndorserID", client.endorserID, "ClientID", client.id).Observe(endorsementLatency)
+			client.metrics.NumOfTransaction.With("EndorserID", client.endorserID, "ClientID", client.id).Add(1)
+			client.metrics.OrderingLatency.With("EndorserID", client.endorserID, "ClientID", client.id).Observe(time.Since(start).Seconds())
 		}
 	}()
 	prop, txid, err := CreateProposal(
@@ -203,18 +215,6 @@ func (client *Client) sendTransaction(txn []string) (err error) {
 	err = client.orderer.Send(envelope)
 	if err != nil {
 		log.Errorf("send to order failed: %v", err)
-		return err
-	}
-	res, err := client.orderer.Recv()
-	if err != nil {
-		if err == io.EOF {
-			return err
-		}
-		logger.Errorf("recv from orderer error: %v", err)
-		return err
-	}
-	if res.Status != common.Status_SUCCESS {
-		logger.Errorf("recv from orderer, status: %s", res.Status)
 		return err
 	}
 	return nil

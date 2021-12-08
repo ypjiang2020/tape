@@ -22,7 +22,7 @@ orderer1: &orderer1
 # Nodes to interact with
 endorser_groups: 1
 endorsers:
-  - *peer1
+  # - *peer1
   # - *peer2
   - *peer3
   - *peer4
@@ -63,12 +63,12 @@ seed: 190129 # if seed equals to 0, set seed to the current time.
 # transactionType: init
 metricsType: prometheus
 metricsAddr: localhost:9876
-interval: 1000
+interval: 10000
 clientsPerEndorser: 10
 
 workload: smallbank
 workloadDirectory: ./__workload
-accountNumber: 1000
+accountNumber: 10000
 hotAccountRate: 0.01
 transactionNumber: 100
 maxTxsPerSession: 30

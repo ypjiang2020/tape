@@ -38,10 +38,13 @@ func NewObserver(channel string, node Node, crypto *Crypto, logger *log.Logger, 
 
 func (o *Observer) Start(numOfClients int, done chan struct{}) {
 	o.logger.Debugf("start observer")
+	cnt := 0
 	for {
+		o.logger.Infof("observer receiving %d", cnt)
+		cnt += 1
 		r, err := o.d.Recv()
 		if err != nil {
-			o.logger.Errorf("observer recieve from orderer error: %v", err)
+			o.logger.Errorf("observer receive from committer error: %v", err)
 			return
 		}
 		if r == nil {

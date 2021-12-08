@@ -15,21 +15,22 @@ type GeneratorT interface {
 
 type Generator struct {
 	smallBank *SmallBank
-	id        int
+	id        string
 	ch        chan *[]string
 }
 
 func NewGenerator(smlbk *SmallBank, id int) *Generator {
 	res := &Generator{
 		smallBank: smlbk,
-		id:        id,
-		ch:        make(chan *[]string, 10),
+		id:        strconv.Itoa(id),
+		ch:        make(chan *[]string, viper.GetInt("generatorBuffer")),
 	}
 	res.start()
 	return res
 }
 
 func (gen *Generator) Generate() []string {
+	gen.smallBank.metrics.GeneratorCounter.With("generator", gen.id).Add(1)
 	return *(<-gen.ch)
 }
 
@@ -53,6 +54,7 @@ func (gen *Generator) createAccount() {
 	money := strconv.Itoa(1e9)
 	txsPerClient := gen.smallBank.accountNumber/gen.smallBank.clients + 1
 	for j := 0; j < txsPerClient; j++ {
+		gen.smallBank.metrics.CreateCounter.With("generator", gen.id).Add(1)
 		txid := fmt.Sprintf("%d_+=+_%s_+=+_%s", j, session, utils.GetName(20))
 		idx := utils.GetName(64)
 		gen.smallBank.ch <- idx
@@ -62,6 +64,7 @@ func (gen *Generator) createAccount() {
 }
 
 func (gen *Generator) sendPayment() {
+	clients := viper.GetInt("accountNumber")
 	for {
 		// loop for timeout
 		session := utils.GetName(20)
@@ -71,11 +74,12 @@ func (gen *Generator) sendPayment() {
 		for k < txThisSession {
 			k += 1
 			txid := fmt.Sprintf("%d_+=+_%s_+=+_%s", k, session, utils.GetName(20))
-			from := gen.smallBank.zipf.Generate()
-			to := gen.smallBank.zipf.Generate()
+			from := utils.RandomId(clients) // gen.smallBank.zipf.Generate()
+			to := utils.RandomId(clients)   //gen.smallBank.zipf.Generate()
 			for to == from {
-				to = gen.smallBank.zipf.Generate()
+				to = utils.RandomId(clients) //gen.smallBank.zipf.Generate()
 			}
+			gen.smallBank.metrics.CreateCounter.With("generator", gen.id).Add(1)
 			gen.ch <- &[]string{txid, "SendPayment", gen.smallBank.accounts[from], gen.smallBank.accounts[to], "1"}
 		}
 	}

@@ -9,7 +9,7 @@ ENV export GOSUMDB=off
 
 COPY . .
 
-RUN go build -v ./cmd/tape
+RUN go build -o tape ./benchmark
 
 FROM tape-base
 RUN mkdir -p /config

@@ -4,20 +4,23 @@ import "github.com/Yunpeng-J/tape/pkg/metrics"
 
 var (
 	endorsementLatency = metrics.HistogramOpts{
-		Name: "endorsementLatency",
-		Help: "from create transaction to receive endorsement",
+		Name:       "endorsementLatency",
+		Help:       "from create transaction to receive endorsement",
+		LabelNames: []string{"EndorserID", "ClientID"},
 	}
 	e2eLatency = metrics.HistogramOpts{
 		Name: "e2eLatency",
 		Help: "from create transaction to receive commit ack",
 	}
 	orderingLatency = metrics.HistogramOpts{
-		Name: "orderingLatency",
-		Help: "from broadcasting envelope to receiving ack",
+		Name:       "orderingLatency",
+		Help:       "from broadcasting envelope to receiving ack",
+		LabelNames: []string{"EndorserID", "ClientID"},
 	}
 	numOfTransaction = metrics.CounterOpts{
-		Name: "numOfTransaction",
-		Help: "the number of transaction that broadcast to ordering service",
+		Name:       "numOfTransaction",
+		Help:       "the number of transaction that broadcast to ordering service",
+		LabelNames: []string{"EndorserID", "ClientID"},
 	}
 	committedTransaction = metrics.CounterOpts{
 		Name: "committedTransaction",

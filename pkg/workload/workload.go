@@ -3,6 +3,7 @@ package workload
 import (
 	"fmt"
 
+	"github.com/Yunpeng-J/tape/pkg/metrics"
 	"github.com/Yunpeng-J/tape/pkg/workload/smallbank"
 	"github.com/spf13/viper"
 )
@@ -15,12 +16,12 @@ type WorkloadProvider struct {
 	Provider
 }
 
-func NewWorkloadProvider() *WorkloadProvider {
+func NewWorkloadProvider(provider metrics.Provider) *WorkloadProvider {
 	wlp := &WorkloadProvider{}
 	workload := viper.GetString("workload")
 	switch workload {
 	case "smallbank":
-		wlp.Provider = smallbank.NewSmallBank()
+		wlp.Provider = smallbank.NewSmallBank(provider)
 	case "kv":
 		panic("TODO")
 	default:
