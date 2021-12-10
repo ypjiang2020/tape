@@ -63,7 +63,7 @@ seed: 190129 # if seed equals to 0, set seed to the current time.
 # transactionType: init
 metricsType: prometheus
 metricsAddr: localhost:9876
-interval: 10000
+interval: 10
 clientsPerEndorser: 10
 
 workload: smallbank
@@ -75,3 +75,4 @@ maxTxsPerSession: 30
 minTxsPerSession: 5
 maxHotPay: 10 # not used
 zipfs: 0
+newseed: 20

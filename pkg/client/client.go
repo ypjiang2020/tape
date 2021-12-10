@@ -144,7 +144,7 @@ func (client *Client) Run(ctx context.Context) {
 		case <-ctx.Done():
 			// timeout
 			txn := client.workload.Stop()
-			logger.Infof("client %d for endorser %d is ready to stop", client.id, client.endorserID)
+			logger.Infof("client %s for endorser %s is ready to stop", client.id, client.endorserID)
 			client.sendTransaction(txn)
 			return
 		default:
