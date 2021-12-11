@@ -26,6 +26,16 @@ var (
 		Name: "committedTransaction",
 		Help: "the number of committed transaction",
 	}
+
+	// abort rate
+	numOfAborts = metrics.CounterOpts{
+		Name: "numOfAborts",
+		Help: "The number of aborted transactions",
+	}
+	numOfCommits = metrics.CounterOpts{
+		Name: "numOfCommits",
+		Help: "The number of committed transactions",
+	}
 )
 
 type Metrics struct {
@@ -34,6 +44,9 @@ type Metrics struct {
 	OrderingLatency      metrics.Histogram
 	NumOfTransaction     metrics.Counter
 	CommittedTransaction metrics.Counter
+
+	NumOfAborts  metrics.Counter
+	NumOfCommits metrics.Counter
 }
 
 func NewMetrics(p metrics.Provider) *Metrics {
@@ -43,5 +56,7 @@ func NewMetrics(p metrics.Provider) *Metrics {
 		OrderingLatency:      p.NewHistogram(orderingLatency),
 		NumOfTransaction:     p.NewCounter(numOfTransaction),
 		CommittedTransaction: p.NewCounter(committedTransaction),
+		NumOfAborts:          p.NewCounter(numOfAborts),
+		NumOfCommits:         p.NewCounter(numOfCommits),
 	}
 }

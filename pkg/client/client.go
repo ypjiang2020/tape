@@ -10,7 +10,6 @@ import (
 	"github.com/Yunpeng-J/fabric-protos-go/common"
 	"github.com/Yunpeng-J/fabric-protos-go/orderer"
 	"github.com/Yunpeng-J/fabric-protos-go/peer"
-	"github.com/Yunpeng-J/tape/pkg/metrics"
 	"github.com/Yunpeng-J/tape/pkg/workload"
 	"github.com/Yunpeng-J/tape/pkg/workload/smallbank"
 	log "github.com/sirupsen/logrus"
@@ -31,7 +30,7 @@ type ClientManager struct {
 	metrics  *Metrics
 }
 
-func NewClientManager(e2eCh chan *Tracker, endorsers []Node, orderer Node, crypto *Crypto, client int, gen workload.Provider, provider metrics.Provider) *ClientManager {
+func NewClientManager(e2eCh chan *Tracker, endorsers []Node, orderer Node, crypto *Crypto, client int, gen workload.Provider, metric *Metrics) *ClientManager {
 	if client < 1 {
 		panic("clientsPerEndorser must be greater than 0")
 	}
@@ -39,7 +38,7 @@ func NewClientManager(e2eCh chan *Tracker, endorsers []Node, orderer Node, crypt
 		clients:  make([][]*Client, len(endorsers)),
 		workload: gen,
 		e2eCh:    e2eCh,
-		metrics:  NewMetrics(provider),
+		metrics:  metric,
 	}
 	cnt := 0
 	for i := 0; i < len(endorsers); i++ {

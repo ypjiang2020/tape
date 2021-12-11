@@ -32,6 +32,7 @@ func runCmd(config Config) {
 		ListenAddress: viper.GetString("metricsAddr"),
 		Provider:      viper.GetString("metricsType"),
 	})
+	metric := NewMetrics(metricsSystem.Provider)
 	crypto, err := config.LoadCrypto()
 	if err != nil {
 		panic(fmt.Sprintf("load crypto failed: %v", err))
@@ -45,6 +46,7 @@ func runCmd(config Config) {
 		crypto,
 		logger,
 		e2eCh,
+		metric,
 	)
 	done := make(chan struct{})
 	viper.SetDefault("clientsNumber", len(config.Endorsers)*viper.GetInt("clientsPerEndorser"))
@@ -57,7 +59,7 @@ func runCmd(config Config) {
 		crypto,
 		viper.GetInt("clientsPerEndorser"),
 		workload.Provider,
-		metricsSystem.Provider,
+		metric,
 	)
 	timeout := viper.GetInt("interval")
 	if viper.GetString("transactionType") == "init" {

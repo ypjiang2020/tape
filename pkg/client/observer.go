@@ -11,9 +11,11 @@ type Observer struct {
 	d      peer.Deliver_DeliverFilteredClient
 	e2eCh  chan *Tracker
 	logger *log.Logger
+
+	metrics *Metrics
 }
 
-func NewObserver(channel string, node Node, crypto *Crypto, logger *log.Logger, e2eCh chan *Tracker) (*Observer, error) {
+func NewObserver(channel string, node Node, crypto *Crypto, logger *log.Logger, e2eCh chan *Tracker, metric *Metrics) (*Observer, error) {
 	deliverer, err := CreateDeliverFilteredClient(node, logger)
 	if err != nil {
 		return nil, err
@@ -33,14 +35,14 @@ func NewObserver(channel string, node Node, crypto *Crypto, logger *log.Logger, 
 		return nil, err
 	}
 
-	return &Observer{d: deliverer, logger: logger, e2eCh: e2eCh}, nil
+	return &Observer{d: deliverer, logger: logger, e2eCh: e2eCh, metrics: metric}, nil
 }
 
 func (o *Observer) Start(numOfClients int, done chan struct{}) {
 	o.logger.Debugf("start observer")
 	cnt := 0
 	for {
-		o.logger.Infof("observer receiving %d", cnt)
+		// o.logger.Infof("observer receiving %d", cnt)
 		cnt += 1
 		r, err := o.d.Recv()
 		if err != nil {
@@ -60,6 +62,13 @@ func (o *Observer) Start(numOfClients int, done chan struct{}) {
 				o.e2eCh <- &Tracker{
 					txid:      txid,
 					timestamp: cur,
+				}
+				if tx.TxValidationCode == peer.TxValidationCode_VALID {
+					o.metrics.NumOfCommits.Add(1)
+				} else if tx.TxValidationCode == peer.TxValidationCode_MVCC_READ_CONFLICT {
+					o.metrics.NumOfAborts.Add(1)
+				} else {
+					o.logger.Errorf("transaction error: %s", tx.TxValidationCode)
 				}
 				if txid[len(txid)-5:] == "#end#" {
 					numOfClients -= 1
