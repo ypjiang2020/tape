@@ -50,7 +50,7 @@ func (a *Assembler) sign(e *Elements) (*Elements, error) {
 
 func (a *Assembler) StartSigner(raw chan *Elements, signed []chan *Elements, errorCh chan error, done <-chan struct{}) {
 	endorsers_per_group := int(len(signed) / a.EndorserGroups)
-	rand.Seed(666)
+	// rand.Seed(666)
 	for {
 		select {
 		case r := <-raw:

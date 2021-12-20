@@ -1,6 +1,7 @@
 package client
 
 import (
+	"strconv"
 	"time"
 
 	"github.com/Yunpeng-J/fabric-protos-go/peer"
@@ -56,7 +57,9 @@ func (o *Observer) Start(numOfClients int, done chan struct{}) {
 		cur := time.Now()
 		switch t := r.Type.(type) {
 		case *peer.DeliverResponse_FilteredBlock:
-			o.logger.Infof("observer receive block %d with length %d", t.FilteredBlock.Number, len(t.FilteredBlock.FilteredTransactions))
+			txns := len(t.FilteredBlock.FilteredTransactions)
+			commits := 0
+			o.logger.Infof("observer receive block %d with length %d", t.FilteredBlock.Number, txns)
 			for _, tx := range t.FilteredBlock.FilteredTransactions {
 				txid := tx.GetTxid()
 				o.e2eCh <- &Tracker{
@@ -65,6 +68,7 @@ func (o *Observer) Start(numOfClients int, done chan struct{}) {
 				}
 				if tx.TxValidationCode == peer.TxValidationCode_VALID {
 					o.metrics.NumOfCommits.Add(1)
+					commits += 1
 				} else if tx.TxValidationCode == peer.TxValidationCode_MVCC_READ_CONFLICT {
 					o.metrics.NumOfAborts.Add(1)
 				} else {
@@ -80,6 +84,7 @@ func (o *Observer) Start(numOfClients int, done chan struct{}) {
 					}
 				}
 			}
+			o.metrics.AbortRatePerBlock.With("blockid", strconv.Itoa(int(t.FilteredBlock.Number))).Add(float64(txns-commits) / float64(txns))
 		case *peer.DeliverResponse_Status:
 			o.logger.Infof("observer receive from orderer, status:", t.Status)
 		default:

@@ -36,6 +36,11 @@ var (
 		Name: "numOfCommits",
 		Help: "The number of committed transactions",
 	}
+	abortRatePerBlock = metrics.CounterOpts{
+		Name:       "abortRatePerBlock",
+		Help:       "abort rate per block",
+		LabelNames: []string{"blockid"},
+	}
 )
 
 type Metrics struct {
@@ -45,8 +50,9 @@ type Metrics struct {
 	NumOfTransaction     metrics.Counter
 	CommittedTransaction metrics.Counter
 
-	NumOfAborts  metrics.Counter
-	NumOfCommits metrics.Counter
+	NumOfAborts       metrics.Counter
+	NumOfCommits      metrics.Counter
+	AbortRatePerBlock metrics.Counter
 }
 
 func NewMetrics(p metrics.Provider) *Metrics {
@@ -58,5 +64,6 @@ func NewMetrics(p metrics.Provider) *Metrics {
 		CommittedTransaction: p.NewCounter(committedTransaction),
 		NumOfAborts:          p.NewCounter(numOfAborts),
 		NumOfCommits:         p.NewCounter(numOfCommits),
+		AbortRatePerBlock:    p.NewCounter(abortRatePerBlock),
 	}
 }
