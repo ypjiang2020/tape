@@ -82,14 +82,17 @@ func (gen *Generator) sendPayment() {
 			k := 0
 			txThisSession := utils.RandomInRange(gen.smallBank.minTxsPerSession, gen.smallBank.maxTxsPerSession)
 			from := utils.RandomInRange(0, gen.smallBank.hotAccount)/gen.smallBank.clients*gen.smallBank.clients + genid // hot buyer account
-			for from > gen.smallBank.hotAccount {
+			for from >= gen.smallBank.hotAccount {
 				from = utils.RandomInRange(0, gen.smallBank.hotAccount)/gen.smallBank.clients*gen.smallBank.clients + genid // hot buyer account
 			}
 			for k < txThisSession && done < txsPerClient {
 				txid := fmt.Sprintf("%d_+=+_%s_+=+_%s", k, session, utils.GetName(20))
 				k += 1
 				done += 1
-				to := utils.RandomInRange(gen.smallBank.hotAccount*2, gen.smallBank.accountNumber) // normal accounts
+				to := utils.RandomInRange(0, gen.smallBank.accountNumber) // all accounts
+				for from == to {
+					to = utils.RandomInRange(0, gen.smallBank.accountNumber) // all accounts
+				}
 				gen.smallBank.metrics.CreateCounter.With("generator", gen.id).Add(1)
 				gen.ch <- &[]string{txid, "SendPayment", gen.smallBank.accounts[from], gen.smallBank.accounts[to], "1"}
 			}
@@ -98,9 +101,9 @@ func (gen *Generator) sendPayment() {
 			to := utils.RandomInRange(gen.smallBank.hotAccount, gen.smallBank.hotAccount*2) // hot seller account
 			txid := fmt.Sprintf("%d_+=+_%s_+=+_%s", 0, session, utils.GetName(20))
 			done += 1
-			from := gen.smallBank.hotAccount*2 + utils.RandomInRange(0, gen.smallBank.accountNumber-gen.smallBank.hotAccount*2)/gen.smallBank.clients*gen.smallBank.clients + genid // normal accounts
-			for from > gen.smallBank.accountNumber {
-				from = gen.smallBank.hotAccount*2 + utils.RandomInRange(0, gen.smallBank.accountNumber-gen.smallBank.hotAccount*2)/gen.smallBank.clients*gen.smallBank.clients + genid // normal accounts
+			from := utils.RandomInRange(0, gen.smallBank.accountNumber)/gen.smallBank.clients*gen.smallBank.clients + genid // normal accounts
+			for from >= gen.smallBank.accountNumber {
+				from = utils.RandomInRange(0, gen.smallBank.accountNumber)/gen.smallBank.clients*gen.smallBank.clients + genid // normal accounts
 			}
 			gen.smallBank.metrics.CreateCounter.With("generator", gen.id).Add(1)
 			gen.ch <- &[]string{txid, "SendPayment", gen.smallBank.accounts[from], gen.smallBank.accounts[to], "1"}
@@ -108,13 +111,13 @@ func (gen *Generator) sendPayment() {
 			// normal
 			txid := fmt.Sprintf("%d_+=+_%s_+=+_%s", 0, session, utils.GetName(20))
 			done += 1
-			from := gen.smallBank.hotAccount*2 + utils.RandomInRange(0, gen.smallBank.accountNumber-gen.smallBank.hotAccount*2)/gen.smallBank.clients*gen.smallBank.clients + genid // normal accounts
-			for from > gen.smallBank.accountNumber {
-				from = gen.smallBank.hotAccount*2 + utils.RandomInRange(0, gen.smallBank.accountNumber-gen.smallBank.hotAccount*2)/gen.smallBank.clients*gen.smallBank.clients + genid // normal accounts
+			from := utils.RandomInRange(0, gen.smallBank.accountNumber)/gen.smallBank.clients*gen.smallBank.clients + genid // normal accounts
+			for from >= gen.smallBank.accountNumber {
+				from = utils.RandomInRange(0, gen.smallBank.accountNumber)/gen.smallBank.clients*gen.smallBank.clients + genid // normal accounts
 			}
-			to := utils.RandomInRange(gen.smallBank.hotAccount*2, gen.smallBank.accountNumber) // normal accounts
+			to := utils.RandomInRange(0, gen.smallBank.accountNumber) // normal accounts
 			for to == from {
-				to = utils.RandomInRange(gen.smallBank.hotAccount*2, gen.smallBank.accountNumber)
+				to = utils.RandomInRange(0, gen.smallBank.accountNumber) // normal accounts
 			}
 			gen.smallBank.metrics.CreateCounter.With("generator", gen.id).Add(1)
 			gen.ch <- &[]string{txid, "SendPayment", gen.smallBank.accounts[from], gen.smallBank.accounts[to], "1"}
