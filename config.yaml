@@ -65,14 +65,29 @@ metricsType: prometheus
 metricsAddr: localhost:9876
 interval: 10
 clientsPerEndorser: 10
+smartContract: smallbank # KVStore
 
 workload: smallbank
 workloadDirectory: ./__workload
 accountNumber: 10000
 hotAccountRate: 0.01
+sampleType: zipf # random
+hotRate: 0.5
+zipfs: 0
 transactionNumber: 100
 maxTxsPerSession: 30
 minTxsPerSession: 5
 maxHotPay: 10 # not used
-zipfs: 0
 newseed: 20
+
+DepositChecking: 0.1
+WriteCheck: 0.1
+TransactSavings: 0.1
+SendPayment: 0.2
+Amalgamate: 0.5
+
+KV2: 0.4
+KV4: 0.3
+KV8: 0.2
+KV16: 0.1
+

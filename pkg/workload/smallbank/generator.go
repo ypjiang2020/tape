@@ -49,7 +49,7 @@ func (gen *Generator) start() {
 	if viper.GetString("transactionType") == "init" {
 		go gen.createAccount()
 	} else {
-		go gen.sendPayment()
+		// go gen.sendPayment()
 	}
 }
 

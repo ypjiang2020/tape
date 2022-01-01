@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"math"
+	"math/rand"
 	"os"
 	"strconv"
 	"time"
@@ -23,6 +24,7 @@ import (
 type SmallBank struct {
 	accountNumber     int
 	hotAccountRate    float64
+	hotRate           float64
 	transactionNumber int
 	directory         string
 
@@ -36,6 +38,8 @@ type SmallBank struct {
 
 	zipf *utils.Zipf
 	ch   chan string
+
+	generators []*Generator
 
 	metrics *Metrics
 }
@@ -62,6 +66,7 @@ func NewSmallBank(provider metrics.Provider) *SmallBank {
 		maxTxsPerSession:  viper.GetInt("maxTxsPerSession"),
 		minTxsPerSession:  viper.GetInt("minTxsPerSession"),
 		maxHotPay:         viper.GetInt("maxHotPay"),
+		hotRate:           viper.GetFloat64("hotRate"),
 		accounts:          nil,
 		ch:                make(chan string, 10000),
 		metrics:           NewMetrics(provider),
@@ -77,13 +82,181 @@ func NewSmallBank(provider metrics.Provider) *SmallBank {
 		// res.Init()
 	} else {
 		res.loadAccount()
+		go res.Start()
 		// res.GenerateTransaction()
 	}
 	return res
 }
 
 func (smallBank *SmallBank) ForEachClient(id int) GeneratorT {
-	return NewGenerator(smallBank, id)
+	gen := NewGenerator(smallBank, id)
+	smallBank.generators = append(smallBank.generators, gen)
+	return gen
+}
+
+func (smallBank *SmallBank) Start() {
+	chaincode := viper.GetString("smartContract")
+	switch chaincode {
+	case "smallbank":
+		smallBank.generateSmallBank()
+	case "KVStore":
+		smallBank.generateKVStore()
+	default:
+		panic(fmt.Sprintf("unknown smart contract: %s", chaincode))
+	}
+}
+
+func (smallBank *SmallBank) SampleAccount() int {
+	tp := viper.GetString("sampleType")
+	if tp == "zipf" {
+		return smallBank.zipf.Generate()
+	} else if tp == "random" {
+		var from int
+		r := rand.Float64()
+		if r < smallBank.hotRate {
+			from = utils.RandomInRange(0, smallBank.hotAccount)
+		} else {
+			from = utils.RandomInRange(smallBank.hotAccount, smallBank.accountNumber)
+		}
+		return from
+	} else {
+		panic(fmt.Sprintf("unknown sample type: %s", tp))
+	}
+}
+
+func (smallBank *SmallBank) generateSmallBank() {
+	// CreateAccount: srcId, srcName, amount, amount
+	// DepositChecking: id+, amount
+	// WriteCheck: id-, amount
+	// TransactSavings: id+, amount
+	// SendPayment: src-, dst+, amount
+	// Amalgamate: src-, dst+
+	// Query
+	DepositChecking := viper.GetFloat64("DepositChecking")
+	WriteCheck := viper.GetFloat64("WriteCheck") + DepositChecking
+	TransactSavings := viper.GetFloat64("TransactSavings") + WriteCheck
+	SendPayment := viper.GetFloat64("SendPayment") + TransactSavings
+	Amalgamate := viper.GetFloat64("Amalgamate") + SendPayment
+
+	// clients
+	for i := 0; i < smallBank.transactionNumber; i++ {
+		from := smallBank.SampleAccount()
+		shard := from % smallBank.clients
+
+		txType := rand.Float64()
+		if txType < DepositChecking {
+			tx := []string{"DepositChekcing", smallBank.accounts[from], "1"}
+			smallBank.generators[shard].ch <- &tx
+
+		} else if txType < WriteCheck {
+			tx := []string{"WriteCheck", smallBank.accounts[from], "1"}
+			smallBank.generators[shard].ch <- &tx
+
+		} else if txType < TransactSavings {
+			tx := []string{"TransactSavings", smallBank.accounts[from], "1"}
+			smallBank.generators[shard].ch <- &tx
+
+		} else if txType < SendPayment {
+			to := from
+			for to == from {
+				to = smallBank.SampleAccount()
+			}
+			tx := []string{"SendPayment", smallBank.accounts[from], smallBank.accounts[to], "1"}
+			smallBank.generators[shard].ch <- &tx
+		} else if txType < Amalgamate {
+			tx := []string{"Amalgamate", smallBank.accounts[from], "1"}
+			smallBank.generators[shard].ch <- &tx
+		} else {
+			panic("the sum of transaction ratio should be 1")
+		}
+	}
+	for i := 0; i < smallBank.clients; i++ {
+		smallBank.generators[i].ch <- &[]string{} // stop signal
+	}
+}
+
+func (smallBank *SmallBank) generateKVStore() {
+	// KV2, KV4, KV8, KV16
+	KV2 := viper.GetFloat64("KV2")
+	KV4 := viper.GetFloat64("KV4") + KV2
+	KV8 := viper.GetFloat64("KV8") + KV4
+	KV16 := viper.GetFloat64("KV16") + KV8
+	for i := 0; i < smallBank.transactionNumber; i++ {
+		var tx []string
+		shard := -1
+		txType := rand.Float64()
+		if txType < KV2 {
+			tx = append(tx, "KV2")
+			acts := map[int]int{}
+			for len(acts) < 2 {
+				acid := smallBank.SampleAccount()
+				if _, ok := acts[acid]; !ok {
+					acts[acid] = 1
+				} else {
+					acts[acid] += 1
+				}
+			}
+			for k, _ := range acts {
+				tx = append(tx, smallBank.accounts[k])
+				shard = k % smallBank.clients
+			}
+		} else if txType < KV4 {
+			tx = append(tx, "KV4")
+			acts := map[int]int{}
+			for len(acts) < 4 {
+				acid := smallBank.SampleAccount()
+				if _, ok := acts[acid]; !ok {
+					acts[acid] = 1
+				} else {
+					acts[acid] += 1
+				}
+			}
+			for k, _ := range acts {
+				tx = append(tx, smallBank.accounts[k])
+				shard = k % smallBank.clients
+			}
+
+		} else if txType < KV8 {
+			tx = append(tx, "KV8")
+			acts := map[int]int{}
+			for len(acts) < 8 {
+				acid := smallBank.SampleAccount()
+				if _, ok := acts[acid]; !ok {
+					acts[acid] = 1
+				} else {
+					acts[acid] += 1
+				}
+			}
+			for k, _ := range acts {
+				tx = append(tx, smallBank.accounts[k])
+				shard = k % smallBank.clients
+			}
+
+		} else if txType < KV16 {
+			tx = append(tx, "KV16")
+			acts := map[int]int{}
+			for len(acts) < 16 {
+				acid := smallBank.SampleAccount()
+				if _, ok := acts[acid]; !ok {
+					acts[acid] = 1
+				} else {
+					acts[acid] += 1
+				}
+			}
+			for k, _ := range acts {
+				tx = append(tx, smallBank.accounts[k])
+				shard = k % smallBank.clients
+			}
+
+		} else {
+			panic("the sum of transaction ratio should be 1")
+		}
+		smallBank.generators[shard].ch <- &tx
+	}
+
+	for i := 0; i < smallBank.clients; i++ {
+		smallBank.generators[i].ch <- &[]string{} // stop signal
+	}
 }
 
 func (smallBank *SmallBank) Init() {
