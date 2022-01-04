@@ -8,6 +8,7 @@ import (
 	"math/rand"
 	"os"
 	"strconv"
+	"sync"
 	"time"
 
 	"github.com/spf13/viper"
@@ -40,6 +41,10 @@ type SmallBank struct {
 	ch   chan string
 
 	generators []*Generator
+	resubmit   chan string
+	mu         sync.Mutex
+	cache      map[string][]string
+	cacheShard map[string]int
 
 	metrics *Metrics
 }
@@ -56,7 +61,7 @@ func init() {
 	viper.SetDefault("clientsPerEndorser", 1)
 }
 
-func NewSmallBank(provider metrics.Provider) *SmallBank {
+func NewSmallBank(provider metrics.Provider, resub chan string) *SmallBank {
 	res := &SmallBank{
 		accountNumber:     viper.GetInt("accountNumber"),
 		hotAccountRate:    viper.GetFloat64("hotAccountRate"),
@@ -69,6 +74,10 @@ func NewSmallBank(provider metrics.Provider) *SmallBank {
 		hotRate:           viper.GetFloat64("hotRate"),
 		accounts:          nil,
 		ch:                make(chan string, 10000),
+		resubmit:          resub,
+		mu:                sync.Mutex{},
+		cache:             make(map[string][]string),
+		cacheShard:        make(map[string]int),
 		metrics:           NewMetrics(provider),
 	}
 	res.hotAccount = int(float64(res.accountNumber) * res.hotAccountRate)
@@ -82,7 +91,6 @@ func NewSmallBank(provider metrics.Provider) *SmallBank {
 		// res.Init()
 	} else {
 		res.loadAccount()
-		go res.Start()
 		// res.GenerateTransaction()
 	}
 	return res
@@ -94,7 +102,20 @@ func (smallBank *SmallBank) ForEachClient(id int) GeneratorT {
 	return gen
 }
 
+func (smallBank *SmallBank) Resubmit() {
+	for {
+		txid := <-smallBank.resubmit
+		smallBank.mu.Lock()
+		shard := smallBank.cacheShard[txid]
+		tx := smallBank.cache[txid]
+		tx[0] = txid
+		smallBank.mu.Unlock()
+		smallBank.generators[shard].ch <- &tx
+	}
+}
+
 func (smallBank *SmallBank) Start() {
+	go smallBank.Resubmit()
 	chaincode := viper.GetString("smartContract")
 	switch chaincode {
 	case "smallbank":
@@ -142,36 +163,45 @@ func (smallBank *SmallBank) generateSmallBank() {
 	for i := 0; i < smallBank.transactionNumber; i++ {
 		from := smallBank.SampleAccount()
 		shard := from % smallBank.clients
+		// log.Printf("shard: %d, len %d account %d", shard, len(smallBank.generators), from)
+		txid := utils.GetName(20)
 
+		var tx []string
 		txType := rand.Float64()
 		if txType < DepositChecking {
-			tx := []string{"DepositChekcing", smallBank.accounts[from], "1"}
-			smallBank.generators[shard].ch <- &tx
+			tx = []string{txid, "DepositChecking", smallBank.accounts[from], "1"}
 
 		} else if txType < WriteCheck {
-			tx := []string{"WriteCheck", smallBank.accounts[from], "1"}
-			smallBank.generators[shard].ch <- &tx
+			tx = []string{txid, "WriteCheck", smallBank.accounts[from], "1"}
 
 		} else if txType < TransactSavings {
-			tx := []string{"TransactSavings", smallBank.accounts[from], "1"}
-			smallBank.generators[shard].ch <- &tx
+			tx = []string{txid, "TransactSavings", smallBank.accounts[from], "1"}
 
 		} else if txType < SendPayment {
 			to := from
 			for to == from {
 				to = smallBank.SampleAccount()
 			}
-			tx := []string{"SendPayment", smallBank.accounts[from], smallBank.accounts[to], "1"}
-			smallBank.generators[shard].ch <- &tx
+			tx = []string{txid, "SendPayment", smallBank.accounts[from], smallBank.accounts[to], "1"}
 		} else if txType < Amalgamate {
-			tx := []string{"Amalgamate", smallBank.accounts[from], "1"}
-			smallBank.generators[shard].ch <- &tx
+			to := from
+			for to == from {
+				to = smallBank.SampleAccount()
+			}
+			tx = []string{txid, "Amalgamate", smallBank.accounts[from], smallBank.accounts[to]}
 		} else {
 			panic("the sum of transaction ratio should be 1")
 		}
+		smallBank.generators[shard].ch <- &tx
+		smallBank.mu.Lock()
+		smallBank.cacheShard[txid] = shard
+		smallBank.cache[txid] = tx
+		smallBank.mu.Unlock()
 	}
-	for i := 0; i < smallBank.clients; i++ {
-		smallBank.generators[i].ch <- &[]string{} // stop signal
+	if viper.GetBool("resubmit") == false {
+		for i := 0; i < smallBank.clients; i++ {
+			smallBank.generators[i].ch <- &[]string{} // stop signal
+		}
 	}
 }
 
@@ -182,7 +212,8 @@ func (smallBank *SmallBank) generateKVStore() {
 	KV8 := viper.GetFloat64("KV8") + KV4
 	KV16 := viper.GetFloat64("KV16") + KV8
 	for i := 0; i < smallBank.transactionNumber; i++ {
-		var tx []string
+		txid := utils.GetName(20)
+		tx := []string{txid}
 		shard := -1
 		txType := rand.Float64()
 		if txType < KV2 {

@@ -2,16 +2,20 @@ package client
 
 import (
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/Yunpeng-J/fabric-protos-go/peer"
 	log "github.com/sirupsen/logrus"
+	"github.com/spf13/viper"
 )
 
 type Observer struct {
 	d      peer.Deliver_DeliverFilteredClient
 	e2eCh  chan *Tracker
 	logger *log.Logger
+
+	resubmits map[string]int
 
 	metrics *Metrics
 }
@@ -36,15 +40,23 @@ func NewObserver(channel string, node Node, crypto *Crypto, logger *log.Logger, 
 		return nil, err
 	}
 
-	return &Observer{d: deliverer, logger: logger, e2eCh: e2eCh, metrics: metric}, nil
+	return &Observer{d: deliverer, logger: logger, e2eCh: e2eCh, resubmits: map[string]int{}, metrics: metric}, nil
 }
 
-func (o *Observer) Start(numOfClients int, done chan struct{}) {
+func (o *Observer) Start(numOfClients int, resub chan string, done chan struct{}) {
 	o.logger.Debugf("start observer")
-	cnt := 0
+	cnt := viper.GetInt("transactionNumber")
+	retry := cnt
+	defer func() {
+		log.Println("transactionNumber", cnt)
+		log.Println("retry", retry)
+		o.PrintInfo()
+	}()
+	if viper.GetString("transactionType") == "init" {
+		cnt = viper.GetInt("accountNumber")
+	}
+	resubmitFlag := viper.GetBool("resubmit")
 	for {
-		// o.logger.Infof("observer receiving %d", cnt)
-		cnt += 1
 		r, err := o.d.Recv()
 		if err != nil {
 			o.logger.Errorf("observer receive from committer error: %v", err)
@@ -66,11 +78,30 @@ func (o *Observer) Start(numOfClients int, done chan struct{}) {
 					txid:      txid,
 					timestamp: cur,
 				}
+				temp := strings.Split(txid, "_+=+_")
+				// log.Printf("txid %v", temp)
+				o.resubmits[temp[2]] += 1
 				if tx.TxValidationCode == peer.TxValidationCode_VALID {
 					o.metrics.NumOfCommits.Add(1)
 					commits += 1
+					cnt -= 1
+					if cnt == 0 {
+						log.Println("all transactions finished")
+						close(done)
+						return
+					}
 				} else if tx.TxValidationCode == peer.TxValidationCode_MVCC_READ_CONFLICT {
 					o.metrics.NumOfAborts.Add(1)
+					if resubmitFlag {
+						resub <- temp[2]
+					}
+					retry -= 1
+					if retry == 0 {
+						log.Println("retry 2X, but still cannot commit all transactions. quit")
+						close(done)
+						return
+
+					}
 				} else {
 					o.logger.Errorf("transaction error: %s", tx.TxValidationCode)
 				}
@@ -79,7 +110,7 @@ func (o *Observer) Start(numOfClients int, done chan struct{}) {
 					o.logger.Infof("some client ends")
 					if numOfClients == 0 {
 						o.logger.Infof("observer finished")
-						done <- struct{}{}
+						close(done)
 						return
 					}
 				}
@@ -90,5 +121,11 @@ func (o *Observer) Start(numOfClients int, done chan struct{}) {
 		default:
 			o.logger.Errorf("observer receive from orderer: unknown. Please check the return value manually")
 		}
+	}
+}
+
+func (o *Observer) PrintInfo() {
+	for k, v := range o.resubmits {
+		log.Printf("resubmit %s %d", k, v)
 	}
 }

@@ -49,9 +49,10 @@ func runCmd(config Config) {
 		metric,
 	)
 	done := make(chan struct{})
+	resub := make(chan string, 10000)
 	viper.SetDefault("clientsNumber", len(config.Endorsers)*viper.GetInt("clientsPerEndorser"))
 
-	workload := workload.NewWorkloadProvider(metricsSystem.Provider)
+	workload := workload.NewWorkloadProvider(metricsSystem.Provider, resub)
 	cm := NewClientManager(
 		e2eCh,
 		config.Endorsers,
@@ -67,13 +68,15 @@ func runCmd(config Config) {
 	}
 	ctx, cancel := context.WithTimeout(context.Background(), time.Duration(timeout)*time.Second)
 	_ = cancel
-	cm.Run(ctx)
-	go observer.Start(viper.GetInt("clientsPerEndorser")*len(config.Endorsers), done)
+	cm.Run(ctx, done)
+	go observer.Start(viper.GetInt("clientsPerEndorser")*len(config.Endorsers), resub, done)
 	for {
 		select {
 		case <-done:
 			logger.Infof("finish RunInitCmd in %d ms", time.Since(start).Milliseconds())
-			time.Sleep(time.Duration(1000) * time.Second)
+			if viper.GetBool("wait") == true {
+				time.Sleep(time.Duration(100000) * time.Second)
+			}
 			return
 		}
 	}

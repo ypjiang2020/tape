@@ -80,6 +80,10 @@ minTxsPerSession: 5
 maxHotPay: 10 # not used
 newseed: 20
 
+retry: -1 # -1:unlimited, 0:no, 
+resubmit: false
+wait: true
+
 DepositChecking: 0.1
 WriteCheck: 0.1
 TransactSavings: 0.1

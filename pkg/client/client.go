@@ -49,6 +49,9 @@ func NewClientManager(e2eCh chan *Tracker, endorsers []Node, orderer Node, crypt
 			cnt += 1
 		}
 	}
+	if viper.GetString("transactionType") != "init" {
+		go gen.Start()
+	}
 	logger.Infof("endorsers: %d clients: %d", len(endorsers), cnt)
 	return clientManager
 }
@@ -67,12 +70,12 @@ func (cm *ClientManager) Drain() {
 	}
 }
 
-func (cm *ClientManager) Run(ctx context.Context) {
+func (cm *ClientManager) Run(ctx context.Context, done chan struct{}) {
 	go cm.Drain()
 	for i := 0; i < len(cm.clients); i++ {
 		for j := 0; j < len(cm.clients[i]); j++ {
-			go cm.clients[i][j].StartDraining()
-			go cm.clients[i][j].Run(ctx)
+			go cm.clients[i][j].StartDraining(done)
+			go cm.clients[i][j].Run(ctx, done)
 		}
 	}
 }
@@ -112,11 +115,13 @@ func NewClient(id int, endorserId int, endorser, orderer Node, crypto *Crypto, g
 	return client
 }
 
-func (client *Client) StartDraining() {
+func (client *Client) StartDraining(done chan struct{}) {
 	// TODO: metric
 	for {
 		select {
 		case <-client.done:
+			return
+		case <-done:
 			return
 		default:
 			res, err := client.orderer.Recv()
@@ -134,7 +139,8 @@ func (client *Client) StartDraining() {
 		}
 	}
 }
-func (client *Client) Run(ctx context.Context) {
+
+func (client *Client) Run(ctx context.Context, done chan struct{}) {
 	defer func() {
 		client.done <- struct{}{}
 	}()
@@ -145,6 +151,8 @@ func (client *Client) Run(ctx context.Context) {
 			txn := client.workload.Stop()
 			logger.Infof("client %s for endorser %s is ready to stop", client.id, client.endorserID)
 			client.sendTransaction(txn)
+			return
+		case <-done:
 			return
 		default:
 			// time.Sleep(10 * time.Millisecond)

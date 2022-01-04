@@ -10,18 +10,19 @@ import (
 
 type Provider interface {
 	ForEachClient(i int) smallbank.GeneratorT
+	Start()
 }
 
 type WorkloadProvider struct {
 	Provider
 }
 
-func NewWorkloadProvider(provider metrics.Provider) *WorkloadProvider {
+func NewWorkloadProvider(provider metrics.Provider, resub chan string) *WorkloadProvider {
 	wlp := &WorkloadProvider{}
 	workload := viper.GetString("workload")
 	switch workload {
 	case "smallbank":
-		wlp.Provider = smallbank.NewSmallBank(provider)
+		wlp.Provider = smallbank.NewSmallBank(provider, resub)
 	case "kv":
 		panic("TODO")
 	default:

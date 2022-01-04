@@ -2,7 +2,6 @@ package smallbank
 
 import (
 	"fmt"
-	"log"
 	"math/rand"
 	"strconv"
 
@@ -19,6 +18,9 @@ type Generator struct {
 	smallBank *SmallBank
 	id        string
 	ch        chan *[]string
+
+	session string
+	seq     int
 }
 
 func NewGenerator(smlbk *SmallBank, id int) *Generator {
@@ -26,6 +28,8 @@ func NewGenerator(smlbk *SmallBank, id int) *Generator {
 		smallBank: smlbk,
 		id:        strconv.Itoa(id),
 		ch:        make(chan *[]string, viper.GetInt("generatorBuffer")),
+		session:   utils.GetName(20),
+		seq:       0,
 	}
 	res.start()
 	return res
@@ -34,7 +38,11 @@ func NewGenerator(smlbk *SmallBank, id int) *Generator {
 func (gen *Generator) Generate() []string {
 	gen.smallBank.metrics.GeneratorCounter.With("generator", gen.id).Add(1)
 	temp := *(<-gen.ch)
-	log.Println(temp)
+	if len(temp) > 0 {
+		temp[0] = fmt.Sprintf("%d_+=+_%s_+=+_%s", gen.seq, gen.session, temp[0])
+	}
+	gen.seq += 1
+	// log.Println(temp)
 	return temp
 }
 
@@ -54,15 +62,15 @@ func (gen *Generator) start() {
 }
 
 func (gen *Generator) createAccount() {
-	session := utils.GetName(20)
+	// session := utils.GetName(20)
 	money := strconv.Itoa(1e9)
 	txsPerClient := gen.smallBank.accountNumber/gen.smallBank.clients + 1
 	for j := 0; j < txsPerClient; j++ {
 		gen.smallBank.metrics.CreateCounter.With("generator", gen.id).Add(1)
-		txid := fmt.Sprintf("%d_+=+_%s_+=+_%s", j, session, utils.GetName(20))
+		// txid := fmt.Sprintf("%d_+=+_%s_+=+_%s", j, session, utils.GetName(20))
 		idx := utils.GetName(64)
 		gen.smallBank.ch <- idx
-		gen.ch <- &[]string{txid, "CreateAccount", idx, idx, money, money}
+		gen.ch <- &[]string{utils.GetName(20), "CreateAccount", idx, idx, money, money}
 	}
 	gen.ch <- &[]string{} // stop signal
 }
