@@ -2,6 +2,7 @@ package smallbank
 
 import (
 	"fmt"
+	"log"
 	"math/rand"
 	"strconv"
 
@@ -42,14 +43,14 @@ func (gen *Generator) Generate() []string {
 		temp[0] = fmt.Sprintf("%d_+=+_%s_+=+_%s", gen.seq, gen.session, temp[0])
 	}
 	gen.seq += 1
-	// log.Println(temp)
+	log.Println(temp)
 	return temp
 }
 
 func (gen *Generator) Stop() []string {
 	session := utils.GetName(20)
 	txid := fmt.Sprintf("%d_+=+_%s_+=+_%s#end#", 0, session, utils.GetName(20))
-	idx := utils.GetName(64)
+	idx := utils.GetName(64) + "#end#"
 	return []string{txid, "CreateAccount", idx, idx, "1", "1"}
 }
 
@@ -69,8 +70,9 @@ func (gen *Generator) createAccount() {
 		gen.smallBank.metrics.CreateCounter.With("generator", gen.id).Add(1)
 		// txid := fmt.Sprintf("%d_+=+_%s_+=+_%s", j, session, utils.GetName(20))
 		idx := utils.GetName(64)
+		// log.Printf("client %s key %s", gen.id, idx)
 		gen.smallBank.ch <- idx
-		gen.ch <- &[]string{utils.GetName(20), "CreateAccount", idx, idx, money, money}
+		gen.ch <- &[]string{idx, "CreateAccount", idx, idx, money, money}
 	}
 	gen.ch <- &[]string{} // stop signal
 }

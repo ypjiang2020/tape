@@ -12,6 +12,7 @@ import (
 	"github.com/Yunpeng-J/fabric-protos-go/peer"
 	"github.com/Yunpeng-J/tape/pkg/workload"
 	"github.com/Yunpeng-J/tape/pkg/workload/smallbank"
+	"github.com/Yunpeng-J/tape/pkg/workload/utils"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 )
@@ -49,11 +50,15 @@ func NewClientManager(e2eCh chan *Tracker, endorsers []Node, orderer Node, crypt
 			cnt += 1
 		}
 	}
-	if viper.GetString("transactionType") != "init" {
+	if viper.GetString("transactionType") == "txn" {
 		go gen.Start()
 	}
 	logger.Infof("endorsers: %d clients: %d", len(endorsers), cnt)
 	return clientManager
+}
+
+func (cm *ClientManager) Execute(node int, txn []string) string {
+	return cm.clients[node][0].Execute(txn)
 }
 
 func (cm *ClientManager) Drain() {
@@ -113,6 +118,36 @@ func NewClient(id int, endorserId int, endorser, orderer Node, crypto *Crypto, g
 		panic(fmt.Sprintf("create endorserClient failed: %v", err))
 	}
 	return client
+}
+
+func (client *Client) Execute(txn []string) string {
+	prop, _, err := CreateProposal(
+		utils.GetName(64),
+		client.crypto,
+		viper.GetString("channel"),
+		viper.GetString("chaincode"),
+		viper.GetString("version"),
+		txn,
+	)
+	if err != nil {
+		logger.Errorf("create proposal failed: %v", err)
+		return fmt.Sprintf("%v", err)
+	}
+	sprop, err := SignProposal(prop, client.crypto)
+	if err != nil {
+		logger.Errorf("sign proposal failed: %v", err)
+		return fmt.Sprintf("%v", err)
+	}
+	r, err := client.endorser.ProcessProposal(context.Background(), sprop)
+	if err != nil || r.Response.Status < 200 || r.Response.Status >= 400 {
+		if r == nil {
+			logger.Errorf("Err processing proposal: %v, status: unknown, endorser: %s \n", err, client.endorserID)
+		} else {
+			logger.Errorf("Err processing proposal: %v, status: %d, message: %s, addr: %s \n", err, r.Response.Status, r.Response.Message, client.endorserID)
+		}
+		return fmt.Sprintf("%v", err)
+	}
+	return string(r.Payload)
 }
 
 func (client *Client) StartDraining(done chan struct{}) {

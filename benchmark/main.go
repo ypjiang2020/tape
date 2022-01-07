@@ -34,6 +34,14 @@ var (
 			client.RunTxnCmd(config)
 		},
 	}
+	singleCmd = &cobra.Command{
+		Use:   "execute",
+		Short: "simulate transaction or just query",
+		Run: func(cmd *cobra.Command, args []string) {
+			viper.SetDefault("transactionType", "execute")
+			client.RunSingleCmd(config, args)
+		},
+	}
 )
 
 func init() {
@@ -48,6 +56,7 @@ func init() {
 	viper.BindPFlag("workload", rootCmd.PersistentFlags().Lookup("workload"))
 	rootCmd.AddCommand(initCmd)
 	rootCmd.AddCommand(transactionCmd)
+	rootCmd.AddCommand(singleCmd)
 
 }
 func initConfig() {

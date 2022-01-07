@@ -89,7 +89,7 @@ func NewSmallBank(provider metrics.Provider, resub chan string) *SmallBank {
 		go res.saveAccount()
 		// os.RemoveAll(res.directory + "/account")
 		// res.Init()
-	} else {
+	} else if viper.GetString("transactionType") == "txn" {
 		res.loadAccount()
 		// res.GenerateTransaction()
 	}
@@ -108,7 +108,13 @@ func (smallBank *SmallBank) Resubmit() {
 		smallBank.mu.Lock()
 		shard := smallBank.cacheShard[txid]
 		tx := smallBank.cache[txid]
+		if len(tx) == 0 {
+			log.Println("resub nil", txid)
+			smallBank.mu.Unlock()
+			continue
+		}
 		tx[0] = txid
+		// log.Printf("shard resub txid %s shard %d", txid, shard)
 		smallBank.mu.Unlock()
 		smallBank.generators[shard].ch <- &tx
 	}
@@ -164,7 +170,11 @@ func (smallBank *SmallBank) generateSmallBank() {
 		from := smallBank.SampleAccount()
 		shard := from % smallBank.clients
 		// log.Printf("shard: %d, len %d account %d", shard, len(smallBank.generators), from)
-		txid := utils.GetName(20)
+		txid := utils.GetName(40)
+		txid += "_" + smallBank.accounts[from]
+		if _, ok := smallBank.cache[txid]; ok {
+			panic(fmt.Sprintf("txid %s exist", txid))
+		}
 
 		var tx []string
 		txType := rand.Float64()
@@ -182,20 +192,22 @@ func (smallBank *SmallBank) generateSmallBank() {
 			for to == from {
 				to = smallBank.SampleAccount()
 			}
+			txid += "2" + smallBank.accounts[to]
 			tx = []string{txid, "SendPayment", smallBank.accounts[from], smallBank.accounts[to], "1"}
 		} else if txType < Amalgamate {
 			to := from
 			for to == from {
 				to = smallBank.SampleAccount()
 			}
+			txid += "2" + smallBank.accounts[to]
 			tx = []string{txid, "Amalgamate", smallBank.accounts[from], smallBank.accounts[to]}
 		} else {
 			panic("the sum of transaction ratio should be 1")
 		}
 		smallBank.generators[shard].ch <- &tx
 		smallBank.mu.Lock()
-		smallBank.cacheShard[txid] = shard
-		smallBank.cache[txid] = tx
+		smallBank.cacheShard[tx[0]] = shard
+		smallBank.cache[tx[0]] = tx
 		smallBank.mu.Unlock()
 	}
 	if viper.GetBool("resubmit") == false {

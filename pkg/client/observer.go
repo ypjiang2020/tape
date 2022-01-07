@@ -47,16 +47,24 @@ func (o *Observer) Start(numOfClients int, resub chan string, done chan struct{}
 	o.logger.Debugf("start observer")
 	cnt := viper.GetInt("transactionNumber")
 	retry := cnt
-	defer func() {
-		log.Println("transactionNumber", cnt)
-		log.Println("retry", retry)
-		o.PrintInfo()
-	}()
 	if viper.GetString("transactionType") == "init" {
 		cnt = viper.GetInt("accountNumber")
 	}
+	quit := cnt
+	defer func() {
+		log.Println("transactionNumber", cnt)
+		log.Println("retry", retry)
+		log.Println("quit", quit)
+		o.PrintInfo()
+		close(done)
+	}()
 	resubmitFlag := viper.GetBool("resubmit")
 	for {
+		if quit <= 0 {
+			if !resubmitFlag {
+				return
+			}
+		}
 		r, err := o.d.Recv()
 		if err != nil {
 			o.logger.Errorf("observer receive from committer error: %v", err)
@@ -73,13 +81,14 @@ func (o *Observer) Start(numOfClients int, resub chan string, done chan struct{}
 			commits := 0
 			o.logger.Infof("observer receive block %d with length %d", t.FilteredBlock.Number, txns)
 			for _, tx := range t.FilteredBlock.FilteredTransactions {
+				quit -= 1
 				txid := tx.GetTxid()
 				o.e2eCh <- &Tracker{
 					txid:      txid,
 					timestamp: cur,
 				}
 				temp := strings.Split(txid, "_+=+_")
-				// log.Printf("txid %v", temp)
+				log.Printf("txid %v", temp)
 				o.resubmits[temp[2]] += 1
 				if tx.TxValidationCode == peer.TxValidationCode_VALID {
 					o.metrics.NumOfCommits.Add(1)
@@ -87,7 +96,6 @@ func (o *Observer) Start(numOfClients int, resub chan string, done chan struct{}
 					cnt -= 1
 					if cnt == 0 {
 						log.Println("all transactions finished")
-						close(done)
 						return
 					}
 				} else if tx.TxValidationCode == peer.TxValidationCode_MVCC_READ_CONFLICT {
@@ -98,22 +106,20 @@ func (o *Observer) Start(numOfClients int, resub chan string, done chan struct{}
 					retry -= 1
 					if retry == 0 {
 						log.Println("retry 2X, but still cannot commit all transactions. quit")
-						close(done)
 						return
 
 					}
 				} else {
 					o.logger.Errorf("transaction error: %s", tx.TxValidationCode)
 				}
-				if txid[len(txid)-5:] == "#end#" {
-					numOfClients -= 1
-					o.logger.Infof("some client ends")
-					if numOfClients == 0 {
-						o.logger.Infof("observer finished")
-						close(done)
-						return
-					}
-				}
+				// if txid[len(txid)-5:] == "#end#" {
+				// 	numOfClients -= 1
+				// 	o.logger.Infof("some client ends")
+				// 	if numOfClients == 0 {
+				// 		o.logger.Infof("observer finished")
+				// 		return
+				// 	}
+				// }
 			}
 			o.metrics.AbortRatePerBlock.With("blockid", strconv.Itoa(int(t.FilteredBlock.Number))).Add(float64(txns-commits) / float64(txns))
 		case *peer.DeliverResponse_Status:
@@ -125,7 +131,7 @@ func (o *Observer) Start(numOfClients int, resub chan string, done chan struct{}
 }
 
 func (o *Observer) PrintInfo() {
-	for k, v := range o.resubmits {
-		log.Printf("resubmit %s %d", k, v)
-	}
+	// for k, v := range o.resubmits {
+	// log.Printf("resubmit %s %d", k, v)
+	// }
 }

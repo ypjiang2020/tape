@@ -2,7 +2,7 @@ package utils
 
 import "math/rand"
 
-var chs = []rune("qwertyuiopasdfghjklzxcvbnmQWERTYUIOPASDFGHJKLZXCVBNM1234567890")
+var chs = []rune("qwertyuiopasdfghjklzxcvbnmQWERTYUIOPASDFGHJKLZXCVBNM134567890")
 
 func GetName(n int) string {
 	b := make([]rune, n)
