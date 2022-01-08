@@ -46,7 +46,7 @@ func NewObserver(channel string, node Node, crypto *Crypto, logger *log.Logger, 
 func (o *Observer) Start(numOfClients int, resub chan string, done chan struct{}) {
 	o.logger.Debugf("start observer")
 	cnt := viper.GetInt("transactionNumber")
-	retry := cnt
+	retry := viper.GetInt("retry")
 	if viper.GetString("transactionType") == "init" {
 		cnt = viper.GetInt("accountNumber")
 	}
@@ -88,7 +88,7 @@ func (o *Observer) Start(numOfClients int, resub chan string, done chan struct{}
 					timestamp: cur,
 				}
 				temp := strings.Split(txid, "_+=+_")
-				log.Printf("txid %v", temp)
+				// log.Printf("txid %v", temp)
 				o.resubmits[temp[2]] += 1
 				if tx.TxValidationCode == peer.TxValidationCode_VALID {
 					o.metrics.NumOfCommits.Add(1)
@@ -105,7 +105,7 @@ func (o *Observer) Start(numOfClients int, resub chan string, done chan struct{}
 					}
 					retry -= 1
 					if retry == 0 {
-						log.Println("retry 2X, but still cannot commit all transactions. quit")
+						log.Println("retry run out, but still cannot commit all transactions. quit")
 						return
 
 					}
@@ -131,7 +131,7 @@ func (o *Observer) Start(numOfClients int, resub chan string, done chan struct{}
 }
 
 func (o *Observer) PrintInfo() {
-	// for k, v := range o.resubmits {
-	// log.Printf("resubmit %s %d", k, v)
-	// }
+	for k, v := range o.resubmits {
+		log.Printf("resubmit %s %d", k, v)
+	}
 }

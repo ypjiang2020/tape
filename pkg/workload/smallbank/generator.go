@@ -2,7 +2,6 @@ package smallbank
 
 import (
 	"fmt"
-	"log"
 	"math/rand"
 	"strconv"
 
@@ -43,7 +42,7 @@ func (gen *Generator) Generate() []string {
 		temp[0] = fmt.Sprintf("%d_+=+_%s_+=+_%s", gen.seq, gen.session, temp[0])
 	}
 	gen.seq += 1
-	log.Println(temp)
+	// log.Println(temp)
 	return temp
 }
 
