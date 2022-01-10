@@ -29,6 +29,10 @@ type SmallBank struct {
 	transactionNumber int
 	directory         string
 
+	shardNumber     int
+	shardNextClient map[int]int
+	clientsPerShard int
+
 	clients          int
 	maxTxsPerSession int
 	minTxsPerSession int
@@ -68,6 +72,7 @@ func NewSmallBank(provider metrics.Provider, resub chan string) *SmallBank {
 		transactionNumber: viper.GetInt("transactionNumber"),
 		directory:         viper.GetString("workloadDirectory"),
 		clients:           viper.GetInt("clientsNumber"),
+		clientsPerShard:   viper.GetInt("clientsPerEndorser"),
 		maxTxsPerSession:  viper.GetInt("maxTxsPerSession"),
 		minTxsPerSession:  viper.GetInt("minTxsPerSession"),
 		maxHotPay:         viper.GetInt("maxHotPay"),
@@ -79,9 +84,14 @@ func NewSmallBank(provider metrics.Provider, resub chan string) *SmallBank {
 		cache:             make(map[string][]string),
 		cacheShard:        make(map[string]int),
 		metrics:           NewMetrics(provider),
+		shardNumber:       viper.GetInt("shardNumber"),
+		shardNextClient:   map[int]int{},
 	}
 	res.hotAccount = int(float64(res.accountNumber) * res.hotAccountRate)
 	res.zipf = utils.NewZipf(res.accountNumber, viper.GetFloat64("zipfs"))
+	for i := 0; i < res.shardNumber; i++ {
+		res.shardNextClient[i] = 0
+	}
 
 	log.Printf("\n######\tworkload config (smallbank)\t######\n %v", res)
 
@@ -151,6 +161,17 @@ func (smallBank *SmallBank) SampleAccount() int {
 	}
 }
 
+// round-robin
+func (smallBank *SmallBank) getClientForShard(shard int) int {
+	client := smallBank.shardNextClient[shard]
+	smallBank.shardNextClient[shard] += 1
+	if smallBank.shardNextClient[shard] == smallBank.clientsPerShard {
+		smallBank.shardNextClient[shard] = 0
+	}
+	client = shard*smallBank.clientsPerShard + client
+	return client
+}
+
 func (smallBank *SmallBank) generateSmallBank() {
 	// CreateAccount: srcId, srcName, amount, amount
 	// DepositChecking: id+, amount
@@ -168,7 +189,7 @@ func (smallBank *SmallBank) generateSmallBank() {
 	// clients
 	for i := 0; i < smallBank.transactionNumber; i++ {
 		from := smallBank.SampleAccount()
-		shard := from % smallBank.clients
+		shard := from % smallBank.shardNumber
 		// log.Printf("shard: %d, len %d account %d", shard, len(smallBank.generators), from)
 		txid := utils.GetName(40)
 		txid += "_" + smallBank.accounts[from]
@@ -204,9 +225,10 @@ func (smallBank *SmallBank) generateSmallBank() {
 		} else {
 			panic("the sum of transaction ratio should be 1")
 		}
-		smallBank.generators[shard].ch <- &tx
+		client := smallBank.getClientForShard(shard)
+		smallBank.generators[client].ch <- &tx
 		smallBank.mu.Lock()
-		smallBank.cacheShard[tx[0]] = shard
+		smallBank.cacheShard[tx[0]] = client
 		smallBank.cache[tx[0]] = tx
 		smallBank.mu.Unlock()
 	}
@@ -294,7 +316,8 @@ func (smallBank *SmallBank) generateKVStore() {
 		} else {
 			panic("the sum of transaction ratio should be 1")
 		}
-		smallBank.generators[shard].ch <- &tx
+		client := smallBank.getClientForShard(shard)
+		smallBank.generators[client].ch <- &tx
 	}
 
 	for i := 0; i < smallBank.clients; i++ {

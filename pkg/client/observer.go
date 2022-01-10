@@ -91,6 +91,7 @@ func (o *Observer) Start(numOfClients int, resub chan string, done chan struct{}
 				// log.Printf("txid %v", temp)
 				o.resubmits[temp[2]] += 1
 				if tx.TxValidationCode == peer.TxValidationCode_VALID {
+					log.Println("valid %s", txid)
 					o.metrics.NumOfCommits.Add(1)
 					commits += 1
 					cnt -= 1

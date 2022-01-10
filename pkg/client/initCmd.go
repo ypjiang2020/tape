@@ -50,6 +50,7 @@ func runCmd(config Config) {
 	)
 	done := make(chan struct{})
 	resub := make(chan string, 10000)
+	viper.SetDefault("shardNumber", len(config.Endorsers))
 	viper.SetDefault("clientsNumber", len(config.Endorsers)*viper.GetInt("clientsPerEndorser"))
 
 	workload := workload.NewWorkloadProvider(metricsSystem.Provider, resub)

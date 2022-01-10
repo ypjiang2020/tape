@@ -19,17 +19,19 @@ type Generator struct {
 	id        string
 	ch        chan *[]string
 
-	session string
-	seq     int
+	session         string
+	seq             int
+	clientsPerShard int
 }
 
-func NewGenerator(smlbk *SmallBank, id int) *Generator {
+func NewGenerator(smlbk *SmallBank, id_ int) *Generator {
 	res := &Generator{
-		smallBank: smlbk,
-		id:        strconv.Itoa(id),
-		ch:        make(chan *[]string, viper.GetInt("generatorBuffer")),
-		session:   utils.GetName(20),
-		seq:       0,
+		smallBank:       smlbk,
+		id:              strconv.Itoa(id_),
+		ch:              make(chan *[]string, viper.GetInt("generatorBuffer")),
+		session:         utils.GetName(20),
+		seq:             id_ % viper.GetInt("clientsPerEndorser"),
+		clientsPerShard: viper.GetInt("clientsPerEndorser"),
 	}
 	res.start()
 	return res
@@ -41,7 +43,7 @@ func (gen *Generator) Generate() []string {
 	if len(temp) > 0 {
 		temp[0] = fmt.Sprintf("%d_+=+_%s_+=+_%s", gen.seq, gen.session, temp[0])
 	}
-	gen.seq += 1
+	gen.seq += gen.clientsPerShard
 	// log.Println(temp)
 	return temp
 }
