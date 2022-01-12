@@ -106,8 +106,8 @@ func NewSmallBank(provider metrics.Provider, resub chan string) *SmallBank {
 	return res
 }
 
-func (smallBank *SmallBank) ForEachClient(id int) GeneratorT {
-	gen := NewGenerator(smallBank, id)
+func (smallBank *SmallBank) ForEachClient(id int, session string) GeneratorT {
+	gen := NewGenerator(smallBank, id, session)
 	smallBank.generators = append(smallBank.generators, gen)
 	return gen
 }
@@ -127,6 +127,7 @@ func (smallBank *SmallBank) Resubmit() {
 		// log.Printf("shard resub txid %s shard %d", txid, shard)
 		smallBank.mu.Unlock()
 		smallBank.generators[shard].ch <- &tx
+		// log.Println("resub true", txid)
 	}
 }
 
@@ -163,6 +164,8 @@ func (smallBank *SmallBank) SampleAccount() int {
 
 // round-robin
 func (smallBank *SmallBank) getClientForShard(shard int) int {
+	smallBank.mu.Lock()
+	defer smallBank.mu.Unlock()
 	client := smallBank.shardNextClient[shard]
 	smallBank.shardNextClient[shard] += 1
 	if smallBank.shardNextClient[shard] == smallBank.clientsPerShard {
@@ -185,54 +188,67 @@ func (smallBank *SmallBank) generateSmallBank() {
 	TransactSavings := viper.GetFloat64("TransactSavings") + WriteCheck
 	SendPayment := viper.GetFloat64("SendPayment") + TransactSavings
 	Amalgamate := viper.GetFloat64("Amalgamate") + SendPayment
+	wg := sync.WaitGroup{}
+	wkt := viper.GetInt("WorkloadThread")
+	wg.Add(wkt)
+	txnPerThread := int(smallBank.transactionNumber / wkt)
+	for j := 0; j < wkt; j++ {
+		// clients
+		go func() {
 
-	// clients
-	for i := 0; i < smallBank.transactionNumber; i++ {
-		from := smallBank.SampleAccount()
-		shard := from % smallBank.shardNumber
-		// log.Printf("shard: %d, len %d account %d", shard, len(smallBank.generators), from)
-		txid := utils.GetName(40)
-		txid += "_" + smallBank.accounts[from]
-		if _, ok := smallBank.cache[txid]; ok {
-			panic(fmt.Sprintf("txid %s exist", txid))
-		}
+			for i := 0; i < txnPerThread; i++ {
+				smallBank.metrics.CreateCounter.With("generator", "0").Add(1)
+				from := smallBank.SampleAccount()
+				shard := from % smallBank.shardNumber
+				// log.Printf("shard: %d, len %d account %d", shard, len(smallBank.generators), from)
+				txid := utils.GetName(40)
+				txid += "_" + smallBank.accounts[from]
+				// if _, ok := smallBank.cache[txid]; ok {
+				// 	panic(fmt.Sprintf("txid %s exist", txid))
+				// }
 
-		var tx []string
-		txType := rand.Float64()
-		if txType < DepositChecking {
-			tx = []string{txid, "DepositChecking", smallBank.accounts[from], "1"}
+				var tx []string
+				txType := rand.Float64()
+				if txType < DepositChecking {
+					tx = []string{txid, "DepositChecking", smallBank.accounts[from], "1"}
 
-		} else if txType < WriteCheck {
-			tx = []string{txid, "WriteCheck", smallBank.accounts[from], "1"}
+				} else if txType < WriteCheck {
+					tx = []string{txid, "WriteCheck", smallBank.accounts[from], "1"}
 
-		} else if txType < TransactSavings {
-			tx = []string{txid, "TransactSavings", smallBank.accounts[from], "1"}
+				} else if txType < TransactSavings {
+					tx = []string{txid, "TransactSavings", smallBank.accounts[from], "1"}
 
-		} else if txType < SendPayment {
-			to := from
-			for to == from {
-				to = smallBank.SampleAccount()
+				} else if txType < SendPayment {
+					to := from
+					for to == from {
+						to = smallBank.SampleAccount()
+					}
+					txid += "2" + smallBank.accounts[to]
+					tx = []string{txid, "SendPayment", smallBank.accounts[from], smallBank.accounts[to], "1"}
+				} else if txType < Amalgamate {
+					to := from
+					for to == from {
+						to = smallBank.SampleAccount()
+					}
+					txid += "2" + smallBank.accounts[to]
+					tx = []string{txid, "Amalgamate", smallBank.accounts[from], smallBank.accounts[to]}
+				} else {
+					panic("the sum of transaction ratio should be 1")
+				}
+				client := smallBank.getClientForShard(shard)
+				smallBank.generators[client].ch <- &tx
+				smallBank.mu.Lock()
+				smallBank.cacheShard[tx[0]] = client
+				smallBank.cache[tx[0]] = tx
+				smallBank.mu.Unlock()
 			}
-			txid += "2" + smallBank.accounts[to]
-			tx = []string{txid, "SendPayment", smallBank.accounts[from], smallBank.accounts[to], "1"}
-		} else if txType < Amalgamate {
-			to := from
-			for to == from {
-				to = smallBank.SampleAccount()
-			}
-			txid += "2" + smallBank.accounts[to]
-			tx = []string{txid, "Amalgamate", smallBank.accounts[from], smallBank.accounts[to]}
-		} else {
-			panic("the sum of transaction ratio should be 1")
-		}
-		client := smallBank.getClientForShard(shard)
-		smallBank.generators[client].ch <- &tx
-		smallBank.mu.Lock()
-		smallBank.cacheShard[tx[0]] = client
-		smallBank.cache[tx[0]] = tx
-		smallBank.mu.Unlock()
+			wg.Done()
+		}()
 	}
-	if viper.GetBool("resubmit") == false {
+	wg.Wait()
+	val, _ := os.LookupEnv("RESUBMIT")
+	resubmitFlag := val == "true"
+	if resubmitFlag == false {
 		for i := 0; i < smallBank.clients; i++ {
 			smallBank.generators[i].ch <- &[]string{} // stop signal
 		}

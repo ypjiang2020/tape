@@ -43,8 +43,9 @@ func NewClientManager(e2eCh chan *Tracker, endorsers []Node, orderer Node, crypt
 	}
 	cnt := 0
 	for i := 0; i < len(endorsers); i++ {
+		session := utils.GetName(20)
 		for j := 0; j < client; j++ {
-			generator := clientManager.workload.ForEachClient(cnt)
+			generator := clientManager.workload.ForEachClient(cnt, session)
 			cli := NewClient(cnt, i, endorsers[i], orderer, crypto, generator, clientManager.metrics, e2eCh)
 			clientManager.clients[i] = append(clientManager.clients[i], cli)
 			cnt += 1

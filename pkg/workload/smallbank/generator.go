@@ -24,12 +24,12 @@ type Generator struct {
 	clientsPerShard int
 }
 
-func NewGenerator(smlbk *SmallBank, id_ int) *Generator {
+func NewGenerator(smlbk *SmallBank, id_ int, session_ string) *Generator {
 	res := &Generator{
 		smallBank:       smlbk,
 		id:              strconv.Itoa(id_),
 		ch:              make(chan *[]string, viper.GetInt("generatorBuffer")),
-		session:         utils.GetName(20),
+		session:         session_,
 		seq:             id_ % viper.GetInt("clientsPerEndorser"),
 		clientsPerShard: viper.GetInt("clientsPerEndorser"),
 	}

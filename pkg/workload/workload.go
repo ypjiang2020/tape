@@ -9,7 +9,7 @@ import (
 )
 
 type Provider interface {
-	ForEachClient(i int) smallbank.GeneratorT
+	ForEachClient(i int, session string) smallbank.GeneratorT
 	Start()
 }
 

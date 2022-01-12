@@ -1,8 +1,11 @@
 package client
 
 import (
+	"net"
+	"os"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/Yunpeng-J/fabric-protos-go/peer"
@@ -15,6 +18,7 @@ type Observer struct {
 	e2eCh  chan *Tracker
 	logger *log.Logger
 
+	mu        sync.Mutex
 	resubmits map[string]int
 
 	metrics *Metrics
@@ -40,11 +44,69 @@ func NewObserver(channel string, node Node, crypto *Crypto, logger *log.Logger, 
 		return nil, err
 	}
 
-	return &Observer{d: deliverer, logger: logger, e2eCh: e2eCh, resubmits: map[string]int{}, metrics: metric}, nil
+	return &Observer{d: deliverer, logger: logger, e2eCh: e2eCh, mu: sync.Mutex{}, resubmits: map[string]int{}, metrics: metric}, nil
+}
+
+func (o *Observer) Resubmit(conn net.Conn, resub chan string, done chan struct{}) {
+	retry := viper.GetInt("retry")
+	reply := make([]byte, 1024)
+	defer func() {
+		log.Println("retry for fabricsharp", retry)
+	}()
+	st := 0
+	for {
+		select {
+		case <-done:
+			return
+		default:
+			n, err := conn.Read(reply[st:])
+			if err != nil {
+				log.Println("Error receive from orderer resubmitter-server")
+				return
+			}
+			buffer := string(reply[:st+n])
+			txids := strings.Split(buffer, "\n")
+			for i := 0; i < len(txids)-1; i++ {
+				if retry > 0 {
+					txid := txids[i]
+					temp := strings.Split(txid, "_+=+_")
+					// log.Println("receive aborted txid", temp)
+					txid = temp[2]
+					// // parse txid, adhoc: why we need this
+					// if len(txid) > 120 {
+					// 	txid = txid[:170]
+					// } else if len(txid) > 100 {
+					// 	txid = txid[:105]
+					// }
+					resub <- txid
+					o.mu.Lock()
+					o.resubmits[txid] += 1
+					o.mu.Unlock()
+
+				}
+
+				retry -= 1
+				if retry == 0 {
+					log.Println("retry run out, but still cannot commit all transactions. quit")
+				}
+			}
+			st = len(txids[len(txids)-1])
+		}
+	}
 }
 
 func (o *Observer) Start(numOfClients int, resub chan string, done chan struct{}) {
 	o.logger.Debugf("start observer")
+
+	val, _ := os.LookupEnv("RESUBMIT")
+	resubmitFlag := val == "true"
+	if resubmitFlag {
+		conn, err := net.Dial("tcp", "fabric_orderer:9988")
+		if err == nil {
+			go o.Resubmit(conn, resub, done)
+		}
+	}
+
 	cnt := viper.GetInt("transactionNumber")
 	retry := viper.GetInt("retry")
 	if viper.GetString("transactionType") == "init" {
@@ -58,7 +120,7 @@ func (o *Observer) Start(numOfClients int, resub chan string, done chan struct{}
 		o.PrintInfo()
 		close(done)
 	}()
-	resubmitFlag := viper.GetBool("resubmit")
+
 	for {
 		if quit <= 0 {
 			if !resubmitFlag {
@@ -89,9 +151,11 @@ func (o *Observer) Start(numOfClients int, resub chan string, done chan struct{}
 				}
 				temp := strings.Split(txid, "_+=+_")
 				// log.Printf("txid %v", temp)
+				o.mu.Lock()
 				o.resubmits[temp[2]] += 1
+				o.mu.Unlock()
 				if tx.TxValidationCode == peer.TxValidationCode_VALID {
-					log.Println("valid %s", txid)
+					// log.Printf("valid %s", txid)
 					o.metrics.NumOfCommits.Add(1)
 					commits += 1
 					cnt -= 1
