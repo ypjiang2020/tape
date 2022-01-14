@@ -62,36 +62,50 @@ seed: 190129 # if seed equals to 0, set seed to the current time.
 # new parameters
 # transactionType: init
 metricsType: prometheus
-metricsAddr: localhost:9876
-interval: 10
-clientsPerEndorser: 10
+metricsAddr: 0.0.0.0:9876
+interval: 10000
+clientsPerEndorser: 1 # one client per endorser to simulate the leading endorser
 smartContract: smallbank # KVStore
+
+generatorBuffer: 10000
 
 workload: smallbank
 workloadDirectory: ./__workload
-accountNumber: 10000
+accountNumber: 10002
+transactionNumber: 50000
 hotAccountRate: 0.01
-sampleType: zipf # random
-hotRate: 0.5
-zipfs: 0
-transactionNumber: 100
-maxTxsPerSession: 30
-minTxsPerSession: 5
-maxHotPay: 10 # not used
-newseed: 20
 
-retry: -1 # -1:unlimited, 0:no, 
-resubmit: false
+sampleType: random # random
+hotRate: 0.1
+zipfs: 0.6
+
+WorkloadThread: 4
+
+retry: 200000 # retry number
 wait: true
+resubmit: false # deprecated, use config.yaml instead
 
-DepositChecking: 0.1
-WriteCheck: 0.1
-TransactSavings: 0.1
-SendPayment: 0.2
-Amalgamate: 0.5
+# breakdown
+crdtOnly: false
+
+DepositChecking: 0.025
+WriteCheck: 0.025
+TransactSavings: 0.025
+Amalgamate: 0.025
+SendPayment: 0.9
 
 KV2: 0.4
 KV4: 0.3
 KV8: 0.2
 KV16: 0.1
 
+# deprecated
+hotBuyer: 0.05 
+hotSeller: 0.5 
+maxTxsPerSession: 30 
+minTxsPerSession: 10 
+maxHotPay: 10 
+maxUniqueKeys: 1024
+
+queryNode: 0
+newseed: 137373737373737

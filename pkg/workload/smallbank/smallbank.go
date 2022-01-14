@@ -147,7 +147,10 @@ func (smallBank *SmallBank) Start() {
 func (smallBank *SmallBank) SampleAccount() int {
 	tp := viper.GetString("sampleType")
 	if tp == "zipf" {
-		return smallBank.zipf.Generate()
+		from := smallBank.zipf.Generate()
+		id := from / smallBank.shardNumber
+		rd := utils.RandomId(smallBank.shardNumber)
+		return id*smallBank.shardNumber + rd
 	} else if tp == "random" {
 		var from int
 		r := rand.Float64()

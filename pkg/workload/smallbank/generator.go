@@ -22,6 +22,7 @@ type Generator struct {
 	session         string
 	seq             int
 	clientsPerShard int
+	crdtOnly        bool
 }
 
 func NewGenerator(smlbk *SmallBank, id_ int, session_ string) *Generator {
@@ -32,12 +33,17 @@ func NewGenerator(smlbk *SmallBank, id_ int, session_ string) *Generator {
 		session:         session_,
 		seq:             id_ % viper.GetInt("clientsPerEndorser"),
 		clientsPerShard: viper.GetInt("clientsPerEndorser"),
+		crdtOnly:        viper.GetBool("crdtOnly"),
 	}
 	res.start()
 	return res
 }
 
 func (gen *Generator) Generate() []string {
+	if gen.crdtOnly {
+		gen.session = utils.GetName(20)
+		gen.seq = 0
+	}
 	gen.smallBank.metrics.GeneratorCounter.With("generator", gen.id).Add(1)
 	temp := *(<-gen.ch)
 	if len(temp) > 0 {
