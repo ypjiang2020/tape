@@ -65,6 +65,7 @@ metricsType: prometheus
 metricsAddr: 0.0.0.0:9876
 interval: 10000
 clientsPerEndorser: 1 # one client per endorser to simulate the leading endorser
+broadcasterNum: 20
 smartContract: smallbank # KVStore
 
 generatorBuffer: 10000
