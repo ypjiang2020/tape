@@ -76,23 +76,23 @@ transactionNumber: 50000
 hotAccountRate: 0.01
 
 sampleType: random # random
-hotRate: 0.1
+hotRate: 0.5
 zipfs: 0.6
 
 WorkloadThread: 4
 
-retry: 200000 # retry number
+retry: 20000000 # retry number
 wait: true
-resubmit: false # deprecated, use config.yaml instead
+resubmit: true # deprecated, use config.yaml instead
 
 # breakdown
 crdtOnly: false
 
-DepositChecking: 0.025
-WriteCheck: 0.025
-TransactSavings: 0.025
-Amalgamate: 0.025
-SendPayment: 0.9
+DepositChecking: 0.125
+WriteCheck: 0.125
+TransactSavings: 0.125
+Amalgamate: 0.125
+SendPayment: 0.5
 
 KV2: 0.4
 KV4: 0.3

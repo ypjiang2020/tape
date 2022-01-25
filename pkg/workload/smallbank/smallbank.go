@@ -88,7 +88,10 @@ func NewSmallBank(provider metrics.Provider, resub chan string) *SmallBank {
 		shardNextClient:   map[int]int{},
 	}
 	res.hotAccount = int(float64(res.accountNumber) * res.hotAccountRate)
-	res.zipf = utils.NewZipf(res.accountNumber, viper.GetFloat64("zipfs"))
+	tp := viper.GetString("sampleType")
+	if tp == "zipf" {
+		res.zipf = utils.NewZipf(res.accountNumber, viper.GetFloat64("zipfs"))
+	}
 	for i := 0; i < res.shardNumber; i++ {
 		res.shardNextClient[i] = 0
 	}
@@ -135,6 +138,14 @@ func (smallBank *SmallBank) Start() {
 	go smallBank.Resubmit()
 	chaincode := viper.GetString("smartContract")
 	switch chaincode {
+	case "hotSeller":
+		smallBank.generateHotSeller()
+	case "hotBuyer":
+		smallBank.generateHotBuyer()
+	case "hotAccount":
+		smallBank.generateHotAccount()
+	case "noOverlap":
+		smallBank.generateNoOverlap()
 	case "smallbank":
 		smallBank.generateSmallBank()
 	case "KVStore":
@@ -165,6 +176,23 @@ func (smallBank *SmallBank) SampleAccount() int {
 	}
 }
 
+func (smallBank *SmallBank) NormalAccount() int {
+	tp := viper.GetString("sampleType")
+	if tp == "zipf" {
+		// TODO
+		from := smallBank.zipf.Generate()
+		id := from / smallBank.shardNumber
+		rd := utils.RandomId(smallBank.shardNumber)
+		return id*smallBank.shardNumber + rd
+	} else if tp == "random" {
+		var from int
+		from = utils.RandomInRange(0, smallBank.accountNumber)
+		return from
+	} else {
+		panic(fmt.Sprintf("unknown sample type: %s", tp))
+	}
+}
+
 // round-robin
 func (smallBank *SmallBank) getClientForShard(shard int) int {
 	smallBank.mu.Lock()
@@ -176,6 +204,170 @@ func (smallBank *SmallBank) getClientForShard(shard int) int {
 	}
 	client = shard*smallBank.clientsPerShard + client
 	return client
+}
+
+func (smallBank *SmallBank) generateHotSeller() {
+	wg := sync.WaitGroup{}
+	wkt := viper.GetInt("WorkloadThread")
+	wg.Add(wkt)
+	txnPerThread := int(smallBank.transactionNumber / wkt)
+	for j := 0; j < wkt; j++ {
+		// clients
+		go func() {
+			for i := 0; i < txnPerThread; i++ {
+				smallBank.metrics.CreateCounter.With("generator", "0").Add(1)
+				from := smallBank.SampleAccount()
+				shard := from % smallBank.shardNumber
+				txid := utils.GetName(40)
+				txid += "_" + smallBank.accounts[from]
+				var tx []string
+				to := from
+				for to == from {
+					to = smallBank.NormalAccount()
+				}
+				txid += "2" + smallBank.accounts[to]
+				tx = []string{txid, "SendPayment", smallBank.accounts[from], smallBank.accounts[to], "1"}
+				client := smallBank.getClientForShard(shard)
+				smallBank.generators[client].ch <- &tx
+				smallBank.mu.Lock()
+				smallBank.cacheShard[tx[0]] = client
+				smallBank.cache[tx[0]] = tx
+				smallBank.mu.Unlock()
+			}
+			wg.Done()
+		}()
+	}
+	wg.Wait()
+	val, _ := os.LookupEnv("RESUBMIT")
+	resubmitFlag := val == "true"
+	if resubmitFlag == false {
+		for i := 0; i < smallBank.clients; i++ {
+			smallBank.generators[i].ch <- &[]string{} // stop signal
+		}
+	}
+}
+
+func (smallBank *SmallBank) generateHotBuyer() {
+	wg := sync.WaitGroup{}
+	wkt := viper.GetInt("WorkloadThread")
+	wg.Add(wkt)
+	txnPerThread := int(smallBank.transactionNumber / wkt)
+	for j := 0; j < wkt; j++ {
+		// clients
+		go func() {
+			for i := 0; i < txnPerThread; i++ {
+				smallBank.metrics.CreateCounter.With("generator", "0").Add(1)
+				from := smallBank.SampleAccount()
+				txid := utils.GetName(40)
+				txid += "_" + smallBank.accounts[from]
+				var tx []string
+				to := from
+				for to == from {
+					from = smallBank.NormalAccount()
+				}
+				shard := from % smallBank.shardNumber
+				txid += "2" + smallBank.accounts[to]
+				tx = []string{txid, "SendPayment", smallBank.accounts[from], smallBank.accounts[to], "1"}
+				client := smallBank.getClientForShard(shard)
+				smallBank.generators[client].ch <- &tx
+				smallBank.mu.Lock()
+				smallBank.cacheShard[tx[0]] = client
+				smallBank.cache[tx[0]] = tx
+				smallBank.mu.Unlock()
+			}
+			wg.Done()
+		}()
+	}
+	wg.Wait()
+	val, _ := os.LookupEnv("RESUBMIT")
+	resubmitFlag := val == "true"
+	if resubmitFlag == false {
+		for i := 0; i < smallBank.clients; i++ {
+			smallBank.generators[i].ch <- &[]string{} // stop signal
+		}
+	}
+}
+
+func (smallBank *SmallBank) generateHotAccount() {
+	wg := sync.WaitGroup{}
+	wkt := viper.GetInt("WorkloadThread")
+	wg.Add(wkt)
+	txnPerThread := int(smallBank.transactionNumber / wkt)
+	for j := 0; j < wkt; j++ {
+		// clients
+		go func() {
+			for i := 0; i < txnPerThread; i++ {
+				smallBank.metrics.CreateCounter.With("generator", "0").Add(1)
+				from := smallBank.SampleAccount()
+				shard := from % smallBank.shardNumber
+				txid := utils.GetName(40)
+				txid += "_" + smallBank.accounts[from]
+				var tx []string
+				to := from
+				for to == from {
+					from = smallBank.SampleAccount()
+				}
+				txid += "2" + smallBank.accounts[to]
+				tx = []string{txid, "SendPayment", smallBank.accounts[from], smallBank.accounts[to], "1"}
+				client := smallBank.getClientForShard(shard)
+				smallBank.generators[client].ch <- &tx
+				smallBank.mu.Lock()
+				smallBank.cacheShard[tx[0]] = client
+				smallBank.cache[tx[0]] = tx
+				smallBank.mu.Unlock()
+			}
+			wg.Done()
+		}()
+	}
+	wg.Wait()
+	val, _ := os.LookupEnv("RESUBMIT")
+	resubmitFlag := val == "true"
+	if resubmitFlag == false {
+		for i := 0; i < smallBank.clients; i++ {
+			smallBank.generators[i].ch <- &[]string{} // stop signal
+		}
+	}
+}
+
+func (smallBank *SmallBank) generateNoOverlap() {
+	wg := sync.WaitGroup{}
+	wkt := viper.GetInt("WorkloadThread")
+	wg.Add(wkt)
+	txnPerThread := int(smallBank.transactionNumber / wkt)
+	for j := 0; j < wkt; j++ {
+		// clients
+		go func() {
+			for i := 0; i < txnPerThread; i++ {
+				smallBank.metrics.CreateCounter.With("generator", "0").Add(1)
+				from := smallBank.SampleAccount()
+				shard := from % smallBank.shardNumber
+				txid := utils.GetName(40)
+				txid += "_" + smallBank.accounts[from]
+				var tx []string
+				to := from
+				for to == from {
+					from = smallBank.SampleAccount()
+				}
+				txid += "2" + smallBank.accounts[to]
+				tx = []string{txid, "NoOverlap", smallBank.accounts[from], smallBank.accounts[to], "1"}
+				client := smallBank.getClientForShard(shard)
+				smallBank.generators[client].ch <- &tx
+				smallBank.mu.Lock()
+				smallBank.cacheShard[tx[0]] = client
+				smallBank.cache[tx[0]] = tx
+				smallBank.mu.Unlock()
+			}
+			wg.Done()
+		}()
+	}
+	wg.Wait()
+	val, _ := os.LookupEnv("RESUBMIT")
+	resubmitFlag := val == "true"
+	if resubmitFlag == false {
+		for i := 0; i < smallBank.clients; i++ {
+			smallBank.generators[i].ch <- &[]string{} // stop signal
+		}
+	}
 }
 
 func (smallBank *SmallBank) generateSmallBank() {

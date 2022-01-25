@@ -76,7 +76,7 @@ func (gen *Generator) createAccount() {
 	for j := 0; j < txsPerClient; j++ {
 		gen.smallBank.metrics.CreateCounter.With("generator", gen.id).Add(1)
 		// txid := fmt.Sprintf("%d_+=+_%s_+=+_%s", j, session, utils.GetName(20))
-		idx := utils.GetName(64)
+		idx := utils.GetName(64) + "_" + strconv.Itoa(j%gen.smallBank.shardNumber) // key := id + shardID
 		// log.Printf("client %s key %s", gen.id, idx)
 		gen.smallBank.ch <- idx
 		gen.ch <- &[]string{idx, "CreateAccount", idx, idx, money, money}
