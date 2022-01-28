@@ -25,6 +25,10 @@ func CreateGRPCClient(node Node) (*comm.GRPCClient, error) {
 		RequireClientCert: false,
 		ServerRootCAs:     certs,
 	}
+	config.KaOpts = comm.KeepaliveOptions{
+		ClientInterval: time.Duration(200) * time.Second,
+		ClientTimeout:  time.Duration(200) * time.Second,
+	}
 
 	if len(certs) > 0 {
 		config.SecOpts.UseTLS = true

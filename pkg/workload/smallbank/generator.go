@@ -2,8 +2,10 @@ package smallbank
 
 import (
 	"fmt"
+	"log"
 	"math/rand"
 	"strconv"
+	"time"
 
 	"github.com/Yunpeng-J/tape/pkg/workload/utils"
 	"github.com/spf13/viper"
@@ -46,11 +48,11 @@ func (gen *Generator) Generate() []string {
 	}
 	gen.smallBank.metrics.GeneratorCounter.With("generator", gen.id).Add(1)
 	temp := *(<-gen.ch)
+	log.Printf("latency %d %s start %d", gen.seq, temp[0], time.Now().UnixNano())
 	if len(temp) > 0 {
 		temp[0] = fmt.Sprintf("%d_+=+_%s_+=+_%s", gen.seq, gen.session, temp[0])
 	}
 	gen.seq += gen.clientsPerShard
-	// log.Println(temp)
 	return temp
 }
 

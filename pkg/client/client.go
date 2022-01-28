@@ -225,7 +225,7 @@ func (client *Client) sendTransaction(txn []string) (err error) {
 	r, err := client.endorser.ProcessProposal(context.Background(), sprop)
 	if err != nil || r.Response.Status < 200 || r.Response.Status >= 400 {
 		if r == nil {
-			logger.Errorf("Err processing proposal: %v, status: unknown, endorser: %s \n", err, client.endorserID)
+			logger.Errorf("Err processing proposal: %v, status: unknown, endorser: %s latency=%d\n", err, client.endorserID, time.Since(start).Seconds())
 		} else {
 			logger.Errorf("Err processing proposal: %v, status: %d, message: %s, addr: %s \n", err, r.Response.Status, r.Response.Message, client.endorserID)
 		}

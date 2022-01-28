@@ -156,6 +156,7 @@ func (o *Observer) Start(numOfClients int, resub chan string, done chan struct{}
 				o.mu.Unlock()
 				if tx.TxValidationCode == peer.TxValidationCode_VALID {
 					// log.Printf("valid %s", txid)
+					log.Printf("latency %s end %d", temp[2], time.Now().UnixNano())
 					o.metrics.NumOfCommits.Add(1)
 					commits += 1
 					cnt -= 1
