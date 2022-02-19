@@ -62,6 +62,7 @@ func runCmd(config Config) {
 		viper.GetInt("clientsPerEndorser"),
 		workload.Provider,
 		metric,
+		resub,
 	)
 	timeout := viper.GetInt("interval")
 	if viper.GetString("transactionType") == "init" {

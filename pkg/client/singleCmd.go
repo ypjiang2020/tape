@@ -35,6 +35,7 @@ func RunSingleCmd(config Config, txn []string) {
 		viper.GetInt("clientsPerEndorser"),
 		workload.Provider,
 		metric,
+		resub,
 	)
 	node := viper.GetInt("queryNode")
 	res := cm.Execute(node, txn)

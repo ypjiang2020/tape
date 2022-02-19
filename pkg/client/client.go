@@ -3,7 +3,9 @@ package client
 import (
 	"context"
 	"fmt"
+	"os"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/Yunpeng-J/fabric-protos-go/common"
@@ -29,9 +31,11 @@ type ClientManager struct {
 	e2eCh              chan *Tracker
 	client2broadcaster chan *common.Envelope
 	metrics            *Metrics
+	resubmit           chan string
+	resubmitFlag       bool
 }
 
-func NewClientManager(e2eCh chan *Tracker, endorsers []Node, orderer Node, crypto *Crypto, client int, gen workload.Provider, metric *Metrics) *ClientManager {
+func NewClientManager(e2eCh chan *Tracker, endorsers []Node, orderer Node, crypto *Crypto, client int, gen workload.Provider, metric *Metrics, resub chan string) *ClientManager {
 	if client < 1 {
 		panic("clientsPerEndorser must be greater than 0")
 	}
@@ -43,7 +47,10 @@ func NewClientManager(e2eCh chan *Tracker, endorsers []Node, orderer Node, crypt
 		e2eCh:              e2eCh,
 		client2broadcaster: make(chan *common.Envelope, 100000),
 		metrics:            metric,
+		resubmit:           resub,
 	}
+	val, _ := os.LookupEnv("RESUBMIT")
+	clientManager.resubmitFlag = val == "true"
 	for i := 0; i < broadcasterNum; i++ {
 		log.Println("create orderer client")
 		clientManager.broadcaster[i] = NewBroadcaster(i, orderer, clientManager.client2broadcaster)
@@ -54,7 +61,7 @@ func NewClientManager(e2eCh chan *Tracker, endorsers []Node, orderer Node, crypt
 		for j := 0; j < client; j++ {
 			generator := clientManager.workload.ForEachClient(cnt, session)
 			log.Println("create endorser client")
-			cli := NewClient(cnt, i, endorsers[i], crypto, generator, clientManager.metrics, e2eCh, clientManager.client2broadcaster)
+			cli := NewClient(clientManager, cnt, i, endorsers[i], crypto, generator, clientManager.metrics, e2eCh, clientManager.client2broadcaster)
 			clientManager.clients[i] = append(clientManager.clients[i], cli)
 			cnt += 1
 		}
@@ -97,6 +104,7 @@ func (cm *ClientManager) Run(ctx context.Context, done chan struct{}) {
 }
 
 type Client struct {
+	cm                 *ClientManager
 	id                 string
 	endorserID         string
 	workload           smallbank.GeneratorT
@@ -109,8 +117,9 @@ type Client struct {
 	metrics *Metrics
 }
 
-func NewClient(id int, endorserId int, endorser Node, crypto *Crypto, generate smallbank.GeneratorT, metrics *Metrics, e2eCh chan *Tracker, c2b chan *common.Envelope) *Client {
+func NewClient(cm *ClientManager, id int, endorserId int, endorser Node, crypto *Crypto, generate smallbank.GeneratorT, metrics *Metrics, e2eCh chan *Tracker, c2b chan *common.Envelope) *Client {
 	client := &Client{
+		cm:                 cm,
 		id:                 strconv.Itoa(id),
 		endorserID:         strconv.Itoa(endorserId),
 		workload:           generate,
@@ -195,6 +204,13 @@ func (client *Client) sendTransaction(txn []string) (err error) {
 		if err != nil {
 			// logger.Errorf("send transaction failed: %v", err)
 			// failed
+
+			// resubmit
+			if client.cm.resubmitFlag {
+				temp := strings.Split(txn[0], "_+=+_")
+				client.cm.resubmit <- temp[2]
+			}
+
 		} else {
 			client.metrics.EndorsementLatency.With("EndorserID", client.endorserID, "ClientID", client.id).Observe(endorsementLatency)
 			client.metrics.NumOfTransaction.With("EndorserID", client.endorserID, "ClientID", client.id).Add(1)
